@@ -1,0 +1,4 @@
+project_id = "xyrbqmmkodxrrzmpodtj"
+
+[functions.detect-music]
+verify_jwt = false
