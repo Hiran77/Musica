@@ -47,10 +47,10 @@ export const Navbar = () => {
           className="flex items-center gap-2 font-bold text-xl group transition-all duration-300"
           onClick={() => setMobileMenuOpen(false)}
         >
-          <div className="relative p-2 rounded-lg bg-gradient-to-br from-primary to-primary-glow">
-            <Music className="h-5 w-5 text-white" />
+          <div className="relative p-2 rounded-lg bg-primary/20 border border-primary/30">
+            <Music className="h-5 w-5 text-primary" />
           </div>
-          <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+          <span className="text-foreground font-bold">
             Musica
           </span>
         </Link>
