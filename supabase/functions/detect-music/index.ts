@@ -92,36 +92,56 @@ serve(async (req) => {
     const signature = await crypto.subtle.sign('HMAC', cryptoKey, messageData);
     const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
 
-    // Create multipart form data
+    // Create proper multipart form data with binary handling
     const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2);
-    const formDataParts = [
-      `--${boundary}`,
-      'Content-Disposition: form-data; name="sample"',
-      'Content-Type: audio/wav',
-      '',
-      new TextDecoder().decode(binaryAudio),
-      `--${boundary}`,
-      'Content-Disposition: form-data; name="access_key"',
-      '',
-      acrcloudApiKey,
-      `--${boundary}`,
-      'Content-Disposition: form-data; name="data_type"',
-      '',
-      'audio',
-      `--${boundary}`,
-      'Content-Disposition: form-data; name="signature_version"',
-      '',
-      '1',
-      `--${boundary}`,
-      'Content-Disposition: form-data; name="signature"',
-      '',
-      signatureBase64,
-      `--${boundary}`,
-      'Content-Disposition: form-data; name="timestamp"',
-      '',
-      timestamp.toString(),
-      `--${boundary}--`,
-    ].join('\r\n');
+    
+    // Build form data parts as Uint8Arrays for proper binary handling
+    const textEncoder = new TextEncoder();
+    const parts: Uint8Array[] = [];
+    
+    // Add sample (audio data)
+    parts.push(textEncoder.encode(`--${boundary}\r\n`));
+    parts.push(textEncoder.encode('Content-Disposition: form-data; name="sample"; filename="audio.wav"\r\n'));
+    parts.push(textEncoder.encode('Content-Type: audio/wav\r\n\r\n'));
+    parts.push(binaryAudio);
+    parts.push(textEncoder.encode('\r\n'));
+    
+    // Add access_key
+    parts.push(textEncoder.encode(`--${boundary}\r\n`));
+    parts.push(textEncoder.encode('Content-Disposition: form-data; name="access_key"\r\n\r\n'));
+    parts.push(textEncoder.encode(`${acrcloudApiKey}\r\n`));
+    
+    // Add data_type
+    parts.push(textEncoder.encode(`--${boundary}\r\n`));
+    parts.push(textEncoder.encode('Content-Disposition: form-data; name="data_type"\r\n\r\n'));
+    parts.push(textEncoder.encode('audio\r\n'));
+    
+    // Add signature_version
+    parts.push(textEncoder.encode(`--${boundary}\r\n`));
+    parts.push(textEncoder.encode('Content-Disposition: form-data; name="signature_version"\r\n\r\n'));
+    parts.push(textEncoder.encode('1\r\n'));
+    
+    // Add signature
+    parts.push(textEncoder.encode(`--${boundary}\r\n`));
+    parts.push(textEncoder.encode('Content-Disposition: form-data; name="signature"\r\n\r\n'));
+    parts.push(textEncoder.encode(`${signatureBase64}\r\n`));
+    
+    // Add timestamp
+    parts.push(textEncoder.encode(`--${boundary}\r\n`));
+    parts.push(textEncoder.encode('Content-Disposition: form-data; name="timestamp"\r\n\r\n'));
+    parts.push(textEncoder.encode(`${timestamp}\r\n`));
+    
+    // End boundary
+    parts.push(textEncoder.encode(`--${boundary}--\r\n`));
+    
+    // Combine all parts into single Uint8Array
+    const totalLength = parts.reduce((sum, part) => sum + part.length, 0);
+    const formDataBody = new Uint8Array(totalLength);
+    let offset = 0;
+    for (const part of parts) {
+      formDataBody.set(part, offset);
+      offset += part.length;
+    }
 
     console.log('Calling ACRCloud API...');
     
@@ -130,7 +150,7 @@ serve(async (req) => {
       headers: {
         'Content-Type': `multipart/form-data; boundary=${boundary}`,
       },
-      body: formDataParts,
+      body: formDataBody,
     });
 
     const acrData = await acrResponse.json();
