@@ -401,17 +401,17 @@ const Index = () => {
   const getMusicPlatformUrls = (title: string, artist: string) => {
     const query = `${title} ${artist}`;
     const encodedQuery = encodeURIComponent(query);
+    const origin = typeof window !== 'undefined' ? encodeURIComponent(window.location.origin) : '';
     
     return {
       youtube: `https://www.youtube.com/results?search_query=${encodedQuery}`,
-      youtubeEmbed: `https://www.youtube.com/embed?listType=search&list=${encodedQuery}`,
+      youtubeEmbed: `https://www.youtube-nocookie.com/embed?listType=search&list=${encodedQuery}&origin=${origin}&modestbranding=1&rel=0`,
       spotify: `https://open.spotify.com/search/${encodedQuery}`,
       appleMusic: `https://music.apple.com/search?term=${encodedQuery}`,
       soundcloud: `https://soundcloud.com/search?q=${encodedQuery}`,
       amazonMusic: `https://music.amazon.com/search/${encodedQuery}`,
     };
   };
-
   const processAudio = async (audioBlob: Blob) => {
     setIsProcessing(true);
     try {
@@ -636,8 +636,9 @@ const Index = () => {
                               src={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).youtubeEmbed}
                               title="YouTube Music Player"
                               frameBorder="0"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                               allowFullScreen
+                              referrerPolicy="strict-origin-when-cross-origin"
                               className="w-full"
                             />
                           </div>
