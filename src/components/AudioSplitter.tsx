@@ -101,9 +101,19 @@ export function AudioSplitter() {
       });
     } catch (error: any) {
       console.error("Error splitting audio:", error);
+      
+      // Handle specific error cases
+      let errorTitle = "Split failed";
+      let errorDescription = error.message || "Failed to split audio";
+      
+      if (error.message?.includes("Payment required")) {
+        errorTitle = "Payment Required";
+        errorDescription = "The audio splitting service requires billing to be set up. Please configure billing at your Replicate account.";
+      }
+      
       toast({
-        title: "Split failed",
-        description: error.message || "Failed to split audio",
+        title: errorTitle,
+        description: errorDescription,
         variant: "destructive",
       });
     } finally {

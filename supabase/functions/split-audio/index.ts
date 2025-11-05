@@ -97,6 +97,19 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Replicate API error:", response.status, errorText);
+      
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Payment required: Please add billing to your Replicate account at https://replicate.com/account/billing" 
+          }),
+          {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+      
       throw new Error(`Replicate API error: ${response.status}`);
     }
 
