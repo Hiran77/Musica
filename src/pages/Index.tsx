@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mic, Music, Loader2, CheckCircle2, XCircle, MonitorPlay, Radio } from "lucide-react";
+import { Mic, Music, Loader2, CheckCircle2, XCircle, MonitorPlay, Radio, Youtube, Music2, Apple, Cloud, ShoppingCart, ExternalLink } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -303,6 +303,19 @@ const Index = () => {
     }
   };
 
+  const getMusicPlatformUrls = (title: string, artist: string) => {
+    const query = `${title} ${artist}`;
+    const encodedQuery = encodeURIComponent(query);
+    
+    return {
+      youtube: `https://www.youtube.com/results?search_query=${encodedQuery}`,
+      spotify: `https://open.spotify.com/search/${encodedQuery}`,
+      appleMusic: `https://music.apple.com/search?term=${encodedQuery}`,
+      soundcloud: `https://soundcloud.com/search?q=${encodedQuery}`,
+      amazonMusic: `https://music.amazon.com/search/${encodedQuery}`,
+    };
+  };
+
   const processAudio = async (audioBlob: Blob) => {
     setIsProcessing(true);
     try {
@@ -487,6 +500,96 @@ const Index = () => {
                             </span>
                           </div>
                         )}
+                        
+                        <div className="mt-4 pt-4 border-t border-green-500/20">
+                          <h4 className="text-sm font-semibold mb-3">Listen on:</h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="justify-start gap-2 bg-red-500/10 border-red-500/20 hover:bg-red-500/20 hover:border-red-500/30"
+                              asChild
+                            >
+                              <a
+                                href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).youtube}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Youtube className="h-4 w-4 text-red-500" />
+                                YouTube
+                                <ExternalLink className="h-3 w-3 ml-auto opacity-50" />
+                              </a>
+                            </Button>
+                            
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="justify-start gap-2 bg-green-500/10 border-green-500/20 hover:bg-green-500/20 hover:border-green-500/30"
+                              asChild
+                            >
+                              <a
+                                href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).spotify}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Music2 className="h-4 w-4 text-green-500" />
+                                Spotify
+                                <ExternalLink className="h-3 w-3 ml-auto opacity-50" />
+                              </a>
+                            </Button>
+                            
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="justify-start gap-2 bg-pink-500/10 border-pink-500/20 hover:bg-pink-500/20 hover:border-pink-500/30"
+                              asChild
+                            >
+                              <a
+                                href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).appleMusic}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Apple className="h-4 w-4 text-pink-500" />
+                                Apple Music
+                                <ExternalLink className="h-3 w-3 ml-auto opacity-50" />
+                              </a>
+                            </Button>
+                            
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="justify-start gap-2 bg-orange-500/10 border-orange-500/20 hover:bg-orange-500/20 hover:border-orange-500/30"
+                              asChild
+                            >
+                              <a
+                                href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).soundcloud}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Cloud className="h-4 w-4 text-orange-500" />
+                                SoundCloud
+                                <ExternalLink className="h-3 w-3 ml-auto opacity-50" />
+                              </a>
+                            </Button>
+                            
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="justify-start gap-2 col-span-2 bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/20 hover:border-blue-500/30"
+                              asChild
+                            >
+                              <a
+                                href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).amazonMusic}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <ShoppingCart className="h-4 w-4 text-blue-500" />
+                                Amazon Music
+                                <ExternalLink className="h-3 w-3 ml-auto opacity-50" />
+                              </a>
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
