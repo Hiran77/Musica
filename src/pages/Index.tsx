@@ -153,7 +153,7 @@ const Index = () => {
     
     let silenceStart = 0;
     const SILENCE_THRESHOLD = 10; // Audio level threshold (0-255)
-    const SILENCE_DURATION = 3000; // 3 seconds of silence before auto-stop
+    const SILENCE_DURATION = 7000; // 7 seconds of silence before auto-stop
     
     const checkAudioLevel = () => {
       if (!analyserRef.current || !isRecording) return;
@@ -506,7 +506,7 @@ const Index = () => {
               <ul className="space-y-1 text-muted-foreground">
                 <li>• <strong>Tab Audio:</strong> Select the tab playing music when prompted</li>
                 <li>• <strong>Microphone:</strong> Position near speakers for best quality</li>
-                <li>• <strong>Auto-stop:</strong> Recording stops automatically after 3s of silence</li>
+                <li>• <strong>Auto-stop:</strong> Recording stops automatically after 7s of silence</li>
                 <li>• <strong>Duration:</strong> Record for 10-15s minimum, longer for difficult songs</li>
                 <li>• <strong>Background music:</strong> Record for 20-30s for scenes with dialogue</li>
                 <li>• Works with YouTube, Spotify, movies, TV shows, and live music</li>
