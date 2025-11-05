@@ -15,6 +15,7 @@ const Index = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [captureMode, setCaptureMode] = useState<"microphone" | "tab">("tab");
   const [recordingDuration, setRecordingDuration] = useState(0);
+  const MAX_RECORD_SECONDS = 30;
   const [detectedSong, setDetectedSong] = useState<{
     title: string;
     artist: string;
@@ -344,9 +345,16 @@ const Index = () => {
       // Start silence detection
       detectSilence(stream);
       
-      // Start duration timer
+      // Start duration timer with max cap
       recordingIntervalRef.current = window.setInterval(() => {
-        setRecordingDuration(prev => prev + 1);
+        setRecordingDuration((prev) => {
+          const next = prev + 1;
+          if (next >= MAX_RECORD_SECONDS && mediaRecorderRef.current?.state === 'recording') {
+            console.log('Max duration reached, auto-stopping...');
+            stopRecording();
+          }
+          return next;
+        });
       }, 1000);
       
       toast({
@@ -433,9 +441,18 @@ const Index = () => {
 
         if (data.success && data.song) {
           setDetectedSong(data.song);
-          
+
+          // Ensure UI leaves listening state
+          setIsRecording(false);
+
           console.log('Song detected! Ensuring screen sharing is stopped...');
-          
+
+          // If still recording for any reason, stop it now
+          if (mediaRecorderRef.current?.state === 'recording') {
+            console.log('Still recording after detection — forcing stop');
+            mediaRecorderRef.current.stop();
+          }
+
           // Double-check stream is stopped on successful detection
           if (streamRef.current) {
             streamRef.current.getTracks().forEach((track) => {
@@ -446,17 +463,18 @@ const Index = () => {
             });
             streamRef.current = null;
           }
-          
-          // Return focus to app
+
+          // Return focus to app and navigate to home to avoid staying on shared tab
           window.focus();
-          
+          setTimeout(() => navigate('/'), 100);
+
           // Save to history if user is logged in
           if (user) {
             await saveDetectionToHistory(data.song);
           }
-          
+
           const confidence = data.song.confidence || 0;
-          
+
           if (confidence >= 80) {
             toast({
               title: "Song detected!",
