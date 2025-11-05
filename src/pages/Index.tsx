@@ -17,9 +17,109 @@ const Index = () => {
   const audioChunksRef = useRef<Blob[]>([]);
   const { toast } = useToast();
 
+  const applyNoiseReduction = async (audioBlob: Blob): Promise<Blob> => {
+    const audioContext = new AudioContext();
+    const arrayBuffer = await audioBlob.arrayBuffer();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+    // Create offline context for processing
+    const offlineContext = new OfflineAudioContext(
+      audioBuffer.numberOfChannels,
+      audioBuffer.length,
+      audioBuffer.sampleRate
+    );
+
+    // Create source
+    const source = offlineContext.createBufferSource();
+    source.buffer = audioBuffer;
+
+    // High-pass filter to remove low-frequency noise (wind, rumble)
+    const highPassFilter = offlineContext.createBiquadFilter();
+    highPassFilter.type = "highpass";
+    highPassFilter.frequency.value = 100;
+    highPassFilter.Q.value = 1;
+
+    // Low-pass filter to remove high-frequency noise
+    const lowPassFilter = offlineContext.createBiquadFilter();
+    lowPassFilter.type = "lowpass";
+    lowPassFilter.frequency.value = 8000;
+    lowPassFilter.Q.value = 1;
+
+    // Compressor to even out volume levels
+    const compressor = offlineContext.createDynamicsCompressor();
+    compressor.threshold.value = -50;
+    compressor.knee.value = 40;
+    compressor.ratio.value = 12;
+    compressor.attack.value = 0;
+    compressor.release.value = 0.25;
+
+    // Connect nodes
+    source.connect(highPassFilter);
+    highPassFilter.connect(lowPassFilter);
+    lowPassFilter.connect(compressor);
+    compressor.connect(offlineContext.destination);
+
+    source.start();
+    const renderedBuffer = await offlineContext.startRendering();
+
+    // Convert back to blob
+    const wavBlob = await audioBufferToWav(renderedBuffer);
+    return wavBlob;
+  };
+
+  const audioBufferToWav = (buffer: AudioBuffer): Promise<Blob> => {
+    const length = buffer.length * buffer.numberOfChannels * 2;
+    const wav = new ArrayBuffer(44 + length);
+    const view = new DataView(wav);
+
+    // WAV header
+    const writeString = (offset: number, string: string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+
+    writeString(0, "RIFF");
+    view.setUint32(4, 36 + length, true);
+    writeString(8, "WAVE");
+    writeString(12, "fmt ");
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, buffer.numberOfChannels, true);
+    view.setUint32(24, buffer.sampleRate, true);
+    view.setUint32(28, buffer.sampleRate * buffer.numberOfChannels * 2, true);
+    view.setUint16(32, buffer.numberOfChannels * 2, true);
+    view.setUint16(34, 16, true);
+    writeString(36, "data");
+    view.setUint32(40, length, true);
+
+    // Write PCM data
+    const channels = [];
+    for (let i = 0; i < buffer.numberOfChannels; i++) {
+      channels.push(buffer.getChannelData(i));
+    }
+
+    let offset = 44;
+    for (let i = 0; i < buffer.length; i++) {
+      for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+        const sample = Math.max(-1, Math.min(1, channels[channel][i]));
+        view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+        offset += 2;
+      }
+    }
+
+    return Promise.resolve(new Blob([wav], { type: "audio/wav" }));
+  };
+
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        } 
+      });
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
@@ -32,7 +132,15 @@ const Index = () => {
 
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-        await processAudio(audioBlob);
+        
+        toast({
+          title: "Cleaning audio",
+          description: "Removing noise and enhancing quality...",
+        });
+        
+        // Apply noise reduction
+        const cleanedAudio = await applyNoiseReduction(audioBlob);
+        await processAudio(cleanedAudio);
         stream.getTracks().forEach((track) => track.stop());
       };
 
