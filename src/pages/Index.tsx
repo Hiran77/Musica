@@ -82,6 +82,14 @@ const Index = () => {
       if (audioContextRef.current) {
         audioContextRef.current.close();
       }
+      // Clean up any active streams
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => {
+          track.stop();
+          console.log('Cleanup: Stopped track', track.kind, track.label);
+        });
+        streamRef.current = null;
+      }
     };
   }, []);
 
@@ -257,11 +265,26 @@ const Index = () => {
           video: true, // Required by browser, but we only use audio
         });
         
+        console.log('Screen sharing started, tracks:', stream.getTracks().map(t => `${t.kind}: ${t.label}`));
+        
         // Stop video track immediately as we only need audio
-        stream.getVideoTracks().forEach(track => track.stop());
+        stream.getVideoTracks().forEach(track => {
+          track.stop();
+          console.log('Stopped video track:', track.label);
+        });
         
         // Store stream reference for later cleanup
         streamRef.current = stream;
+        
+        // Add ended event listener to detect when user stops sharing manually
+        stream.getAudioTracks().forEach(track => {
+          track.addEventListener('ended', () => {
+            console.log('Screen sharing stopped by user');
+            if (isRecording) {
+              stopRecording();
+            }
+          });
+        });
       } else {
         // Capture from microphone
         stream = await navigator.mediaDevices.getUserMedia({ 
@@ -286,6 +309,7 @@ const Index = () => {
       };
 
       mediaRecorder.onstop = async () => {
+        console.log('MediaRecorder stopped, processing audio...');
         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         
         toast({
@@ -297,11 +321,18 @@ const Index = () => {
         const cleanedAudio = await applyNoiseReduction(audioBlob);
         await processAudio(cleanedAudio);
         
-        // Clean up stream if not already stopped
+        // Clean up stream after processing
         if (streamRef.current) {
-          streamRef.current.getTracks().forEach((track) => track.stop());
+          console.log('Stopping all stream tracks after recording...');
+          streamRef.current.getTracks().forEach((track) => {
+            track.stop();
+            console.log('Stopped track:', track.kind, track.label);
+          });
           streamRef.current = null;
         }
+        
+        // Return focus to the app window
+        window.focus();
       };
 
       mediaRecorder.start();
@@ -335,6 +366,7 @@ const Index = () => {
 
   const stopRecording = () => {
     if (mediaRecorderRef.current?.state === "recording") {
+      console.log('Stopping recording...');
       mediaRecorderRef.current.stop();
       setIsRecording(false);
       
@@ -353,9 +385,13 @@ const Index = () => {
         audioContextRef.current = null;
       }
       
-      // Stop stream tracks if still active
+      // Stop stream tracks immediately when stopping recording
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
+        console.log('Stopping stream tracks during stopRecording...');
+        streamRef.current.getTracks().forEach((track) => {
+          track.stop();
+          console.log('Stopped track:', track.kind, track.label);
+        });
         streamRef.current = null;
       }
     }
@@ -397,12 +433,21 @@ const Index = () => {
         if (data.success && data.song) {
           setDetectedSong(data.song);
           
-          // Stop screen sharing immediately on successful detection
+          console.log('Song detected! Ensuring screen sharing is stopped...');
+          
+          // Double-check stream is stopped on successful detection
           if (streamRef.current) {
-            streamRef.current.getTracks().forEach((track) => track.stop());
+            streamRef.current.getTracks().forEach((track) => {
+              if (track.readyState === 'live') {
+                track.stop();
+                console.log('Force stopped active track:', track.kind, track.label);
+              }
+            });
             streamRef.current = null;
-            console.log('Screen sharing stopped after detection');
           }
+          
+          // Return focus to app
+          window.focus();
           
           // Save to history if user is logged in
           if (user) {
