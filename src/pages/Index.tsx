@@ -702,24 +702,6 @@ const Index = () => {
           </TabsContent>
         </Tabs>
 
-        <div className="mt-6 flex gap-4 justify-center">
-          {user ? (
-            <>
-              <Button variant="outline" onClick={() => navigate("/dashboard")}>
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Dashboard
-              </Button>
-              <Button variant="outline" onClick={() => navigate("/history")}>
-                History
-              </Button>
-            </>
-          ) : (
-            <Button onClick={() => navigate("/auth")}>
-              <User className="h-4 w-4 mr-2" />
-              Login / Sign Up
-            </Button>
-          )}
-        </div>
       </div>
       </div>
     </div>
