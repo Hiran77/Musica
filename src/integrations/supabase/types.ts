@@ -14,7 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      detection_history: {
+        Row: {
+          album: string | null
+          artist: string
+          confidence: number | null
+          cover_url: string | null
+          detected_at: string
+          id: string
+          metadata: Json | null
+          song_title: string
+          user_id: string | null
+        }
+        Insert: {
+          album?: string | null
+          artist: string
+          confidence?: number | null
+          cover_url?: string | null
+          detected_at?: string
+          id?: string
+          metadata?: Json | null
+          song_title: string
+          user_id?: string | null
+        }
+        Update: {
+          album?: string | null
+          artist?: string
+          confidence?: number | null
+          cover_url?: string | null
+          detected_at?: string
+          id?: string
+          metadata?: Json | null
+          song_title?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      user_stats: {
+        Row: {
+          favorite_artist: string | null
+          favorite_genre: string | null
+          last_detection_at: string | null
+          total_detections: number | null
+          unique_artists: number | null
+          unique_songs: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          favorite_artist?: string | null
+          favorite_genre?: string | null
+          last_detection_at?: string | null
+          total_detections?: number | null
+          unique_artists?: number | null
+          unique_songs?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          favorite_artist?: string | null
+          favorite_genre?: string | null
+          last_detection_at?: string | null
+          total_detections?: number | null
+          unique_artists?: number | null
+          unique_songs?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
