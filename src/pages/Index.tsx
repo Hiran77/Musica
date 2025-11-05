@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mic, Music, Loader2, CheckCircle2, XCircle, MonitorPlay, Radio, Youtube, Music2, Apple, Cloud, ShoppingCart, ExternalLink, User, BarChart3 } from "lucide-react";
+import { Mic, Music, Loader2, CheckCircle2, XCircle, MonitorPlay, Radio, Youtube, Music2, Apple, Cloud, ShoppingCart, ExternalLink, User, BarChart3, RotateCcw, Heart } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,7 @@ const Index = () => {
     album?: string;
     confidence?: number;
   } | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingIntervalRef = useRef<number | null>(null);
@@ -64,9 +65,25 @@ const Index = () => {
       if (error) throw error;
 
       console.log('Detection saved to history');
+      setIsSaved(true);
+      toast({
+        title: "Saved!",
+        description: "Song added to your history",
+      });
     } catch (error: any) {
       console.error('Error saving detection:', error.message);
+      toast({
+        title: "Error",
+        description: "Failed to save to history",
+        variant: "destructive",
+      });
     }
+  };
+
+  const handleRetry = () => {
+    setDetectedSong(null);
+    setIsSaved(false);
+    setRecordingDuration(0);
   };
 
   useEffect(() => {
@@ -468,7 +485,7 @@ const Index = () => {
           window.focus();
           setTimeout(() => navigate('/'), 100);
 
-          // Save to history if user is logged in
+          // Auto-save to history if user is logged in
           if (user) {
             await saveDetectionToHistory(data.song);
           }
@@ -619,31 +636,74 @@ const Index = () => {
               </Button>
 
               {detectedSong && (
-                <Card className="border-green-500/50 bg-green-500/5">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start gap-3">
-                      <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0 mt-1" />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg">{detectedSong.title}</h3>
-                        <p className="text-muted-foreground">{detectedSong.artist}</p>
-                        {detectedSong.album && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Album: {detectedSong.album}
-                          </p>
-                        )}
-                        {detectedSong.confidence && (
-                          <div className="mt-3 flex items-center gap-2">
-                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-green-500 transition-all duration-500"
-                                style={{ width: `${detectedSong.confidence}%` }}
-                              />
-                            </div>
-                            <span className="text-sm font-medium text-green-600">
-                              {detectedSong.confidence}%
-                            </span>
+                <>
+                  {/* Success Banner */}
+                  <Card className="border-green-500/50 bg-gradient-to-r from-green-500/10 to-emerald-500/10">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          <div className="rounded-full bg-green-500/20 p-2">
+                            <CheckCircle2 className="h-6 w-6 text-green-500" />
                           </div>
-                        )}
+                          <div>
+                            <h3 className="font-semibold text-lg">Song Identified!</h3>
+                            <p className="text-sm text-muted-foreground">
+                              {isSaved ? "Saved to your history" : user ? "Auto-saved to history" : "Sign in to save to history"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={handleRetry}
+                            variant="outline"
+                            size="sm"
+                            className="gap-2"
+                          >
+                            <RotateCcw className="h-4 w-4" />
+                            Retry
+                          </Button>
+                          {user && !isSaved && (
+                            <Button
+                              onClick={() => saveDetectionToHistory(detectedSong)}
+                              variant="default"
+                              size="sm"
+                              className="gap-2"
+                            >
+                              <Heart className="h-4 w-4" />
+                              Save
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Detection Results */}
+                  <Card className="border-green-500/50 bg-green-500/5">
+                    <CardContent className="pt-6">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0 mt-1" />
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">{detectedSong.title}</h3>
+                          <p className="text-muted-foreground">{detectedSong.artist}</p>
+                          {detectedSong.album && (
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Album: {detectedSong.album}
+                            </p>
+                          )}
+                          {detectedSong.confidence && (
+                            <div className="mt-3 flex items-center gap-2">
+                              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-green-500 transition-all duration-500"
+                                  style={{ width: `${detectedSong.confidence}%` }}
+                                />
+                              </div>
+                              <span className="text-sm font-medium text-green-600">
+                                {detectedSong.confidence}%
+                              </span>
+                            </div>
+                          )}
                         
                         <div className="mt-4 pt-4 border-t border-green-500/20">
                           <h4 className="text-sm font-semibold mb-3">Now Playing:</h4>
@@ -753,7 +813,8 @@ const Index = () => {
                     </div>
                   </CardContent>
                 </Card>
-              )}
+              </>
+            )}
 
               {!detectedSong && !isRecording && !isProcessing && (
                 <Card className="border-muted">
