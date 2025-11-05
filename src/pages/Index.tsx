@@ -28,6 +28,7 @@ const Index = () => {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const silenceTimeoutRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -258,6 +259,9 @@ const Index = () => {
         
         // Stop video track immediately as we only need audio
         stream.getVideoTracks().forEach(track => track.stop());
+        
+        // Store stream reference for later cleanup
+        streamRef.current = stream;
       } else {
         // Capture from microphone
         stream = await navigator.mediaDevices.getUserMedia({ 
@@ -267,6 +271,8 @@ const Index = () => {
             autoGainControl: true,
           } 
         });
+        
+        streamRef.current = stream;
       }
       
       const mediaRecorder = new MediaRecorder(stream);
@@ -290,7 +296,12 @@ const Index = () => {
         // Apply noise reduction
         const cleanedAudio = await applyNoiseReduction(audioBlob);
         await processAudio(cleanedAudio);
-        stream.getTracks().forEach((track) => track.stop());
+        
+        // Clean up stream if not already stopped
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+          streamRef.current = null;
+        }
       };
 
       mediaRecorder.start();
@@ -341,6 +352,12 @@ const Index = () => {
         audioContextRef.current.close();
         audioContextRef.current = null;
       }
+      
+      // Stop stream tracks if still active
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
     }
   };
 
@@ -379,6 +396,13 @@ const Index = () => {
 
         if (data.success && data.song) {
           setDetectedSong(data.song);
+          
+          // Stop screen sharing immediately on successful detection
+          if (streamRef.current) {
+            streamRef.current.getTracks().forEach((track) => track.stop());
+            streamRef.current = null;
+            console.log('Screen sharing stopped after detection');
+          }
           
           // Save to history if user is logged in
           if (user) {
