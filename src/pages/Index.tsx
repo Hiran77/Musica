@@ -1,13 +1,15 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mic, Music, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { Mic, Music, Loader2, CheckCircle2, XCircle, MonitorPlay } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [captureMode, setCaptureMode] = useState<"microphone" | "tab">("tab");
   const [detectedSong, setDetectedSong] = useState<{
     title: string;
     artist: string;
@@ -113,13 +115,32 @@ const Index = () => {
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        } 
-      });
+      let stream: MediaStream;
+      
+      if (captureMode === "tab") {
+        // Capture audio from browser tab (YouTube, Spotify, etc.)
+        stream = await navigator.mediaDevices.getDisplayMedia({ 
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+          video: true, // Required by browser, but we only use audio
+        });
+        
+        // Stop video track immediately as we only need audio
+        stream.getVideoTracks().forEach(track => track.stop());
+      } else {
+        // Capture from microphone
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          } 
+        });
+      }
+      
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
@@ -150,7 +171,7 @@ const Index = () => {
       
       toast({
         title: "Recording started",
-        description: "Recording for 15 seconds...",
+        description: `Recording ${captureMode === "tab" ? "tab" : "microphone"} audio for 15 seconds...`,
       });
 
       // Auto-stop after 15 seconds
@@ -160,10 +181,12 @@ const Index = () => {
         }
       }, 15000);
     } catch (error) {
-      console.error("Error accessing microphone:", error);
+      console.error("Error accessing audio:", error);
       toast({
         title: "Error",
-        description: "Could not access microphone. Please grant permission.",
+        description: captureMode === "tab" 
+          ? "Could not access tab audio. Please select a tab and allow audio sharing."
+          : "Could not access microphone. Please grant permission.",
         variant: "destructive",
       });
     }
@@ -246,6 +269,31 @@ const Index = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            <Tabs value={captureMode} onValueChange={(v) => setCaptureMode(v as "microphone" | "tab")} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="tab" className="flex items-center gap-2">
+                  <MonitorPlay className="h-4 w-4" />
+                  Tab Audio
+                </TabsTrigger>
+                <TabsTrigger value="microphone" className="flex items-center gap-2">
+                  <Mic className="h-4 w-4" />
+                  Microphone
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="tab" className="mt-4">
+                <p className="text-sm text-muted-foreground mb-4">
+                  Capture audio directly from YouTube, Spotify, or any browser tab
+                </p>
+              </TabsContent>
+              
+              <TabsContent value="microphone" className="mt-4">
+                <p className="text-sm text-muted-foreground mb-4">
+                  Record music playing near your device's microphone
+                </p>
+              </TabsContent>
+            </Tabs>
+
             <div className="flex flex-col gap-4">
               <Button
                 size="lg"
@@ -309,10 +357,10 @@ const Index = () => {
             <div className="rounded-lg bg-muted/50 p-4 text-sm">
               <h4 className="font-semibold mb-2">Tips for best results:</h4>
               <ul className="space-y-1 text-muted-foreground">
+                <li>• <strong>Tab Audio:</strong> Select the tab playing music when prompted</li>
+                <li>• <strong>Microphone:</strong> Position near speakers for best quality</li>
                 <li>• Record for at least 10-15 seconds</li>
-                <li>• Works with TV shows, movies, YouTube, and live music</li>
-                <li>• Can detect music even with dialogue playing</li>
-                <li>• Ensure your device volume is audible</li>
+                <li>• Works with YouTube, Spotify, movies, TV shows, and live music</li>
               </ul>
             </div>
           </CardContent>
