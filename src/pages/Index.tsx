@@ -1,12 +1,15 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mic, Music, Loader2, CheckCircle2, XCircle, MonitorPlay, Radio, Youtube, Music2, Apple, Cloud, ShoppingCart, ExternalLink } from "lucide-react";
+import { Mic, Music, Loader2, CheckCircle2, XCircle, MonitorPlay, Radio, Youtube, Music2, Apple, Cloud, ShoppingCart, ExternalLink, User, BarChart3 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [captureMode, setCaptureMode] = useState<"microphone" | "tab">("tab");
@@ -25,6 +28,43 @@ const Index = () => {
   const silenceTimeoutRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    checkUser();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setUser(user);
+  };
+
+  const saveDetectionToHistory = async (song: { title: string; artist: string; album?: string; confidence?: number }) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('detection_history')
+        .insert({
+          user_id: user.id,
+          song_title: song.title,
+          artist: song.artist,
+          album: song.album,
+          confidence: song.confidence,
+        });
+
+      if (error) throw error;
+
+      console.log('Detection saved to history');
+    } catch (error: any) {
+      console.error('Error saving detection:', error.message);
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -338,6 +378,12 @@ const Index = () => {
 
         if (data.success && data.song) {
           setDetectedSong(data.song);
+          
+          // Save to history if user is logged in
+          if (user) {
+            await saveDetectionToHistory(data.song);
+          }
+          
           const confidence = data.song.confidence || 0;
           
           if (confidence >= 80) {
@@ -383,7 +429,57 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 p-4">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Header */}
+      <header className="border-b border-green-500/20 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center">
+              <Music className="w-5 h-5 text-white" />
+            </div>
+            <h1 className="text-xl font-bold text-white">Music Detector</h1>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {user ? (
+              <>
+                <Button
+                  onClick={() => navigate('/dashboard')}
+                  variant="outline"
+                  className="border-green-500/30"
+                  size="sm"
+                >
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Dashboard
+                </Button>
+                <Button
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    toast({ title: "Signed out successfully" });
+                  }}
+                  variant="outline"
+                  className="border-red-500/30 text-red-400"
+                  size="sm"
+                >
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => navigate('/auth')}
+                variant="outline"
+                className="border-green-500/30"
+                size="sm"
+              >
+                <User className="w-4 h-4 mr-2" />
+                Sign In
+              </Button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <div className="p-4">
       <div className="container mx-auto max-w-2xl pt-8">
         <div className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
@@ -640,6 +736,7 @@ const Index = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   );
