@@ -47,9 +47,8 @@ export const Navbar = () => {
           className="flex items-center gap-2 font-bold text-xl group transition-all duration-300"
           onClick={() => setMobileMenuOpen(false)}
         >
-          <div className="relative">
-            <Music className="h-6 w-6 text-primary transition-transform group-hover:scale-110" />
-            <div className="absolute inset-0 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="relative p-2 rounded-lg bg-gradient-to-br from-primary to-primary-glow">
+            <Music className="h-5 w-5 text-white" />
           </div>
           <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
             Musica
