@@ -1,19 +1,24 @@
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Music, Download, Check } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Download, CheckCircle, Smartphone } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Install = () => {
+  const navigate = useNavigate();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstalled, setIsInstalled] = useState(false);
-  const navigate = useNavigate();
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
     // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setIsInstalled(true);
     }
+
+    // Check if iOS
+    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    setIsIOS(iOS);
 
     // Listen for beforeinstallprompt event
     const handler = (e: Event) => {
@@ -31,85 +36,105 @@ const Install = () => {
 
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    
+
     if (outcome === 'accepted') {
       setIsInstalled(true);
-      setDeferredPrompt(null);
     }
+
+    setDeferredPrompt(null);
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-background/80 flex items-center justify-center p-4">
-      <Card className="max-w-md w-full p-8 space-y-6 text-center">
-        <div className="flex justify-center">
-          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
-            <Music className="w-10 h-10 text-primary" />
-          </div>
-        </div>
+  if (isInstalled) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex items-center justify-center p-4">
+        <Card className="max-w-md w-full p-8 bg-gray-900/50 border-green-500/20 text-center">
+          <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-white mb-2">Already Installed!</h1>
+          <p className="text-gray-400 mb-6">
+            Music Detector is installed on your device. You can launch it from your home screen.
+          </p>
+          <Button
+            onClick={() => navigate('/')}
+            className="w-full bg-gradient-to-r from-green-500 to-emerald-500"
+          >
+            Go to App
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Install Music Detector</h1>
-          <p className="text-muted-foreground">
-            Install our app for the best experience with offline support and quick access
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex items-center justify-center p-4">
+      <Card className="max-w-md w-full p-8 bg-gray-900/50 border-green-500/20">
+        <div className="text-center mb-6">
+          <Smartphone className="w-16 h-16 text-green-500 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold text-white mb-2">Install Music Detector</h1>
+          <p className="text-gray-400">
+            Get instant access to music detection directly from your home screen
           </p>
         </div>
 
-        {isInstalled ? (
-          <div className="space-y-4">
-            <div className="flex items-center justify-center gap-2 text-primary">
-              <Check className="w-5 h-5" />
-              <span className="font-semibold">App Installed Successfully!</span>
+        <div className="space-y-4 mb-6">
+          <div className="flex items-start gap-3 text-left">
+            <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-white font-medium">Works Offline</p>
+              <p className="text-sm text-gray-400">Access the app even without internet</p>
             </div>
-            <Button onClick={() => navigate("/")} className="w-full">
-              Open App
-            </Button>
           </div>
+          <div className="flex items-start gap-3 text-left">
+            <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-white font-medium">Instant Launch</p>
+              <p className="text-sm text-gray-400">Open directly from your home screen</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 text-left">
+            <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-white font-medium">No App Store Required</p>
+              <p className="text-sm text-gray-400">Install directly from your browser</p>
+            </div>
+          </div>
+        </div>
+
+        {isIOS ? (
+          <div className="bg-gray-800/50 rounded-lg p-4 mb-4">
+            <p className="text-white font-medium mb-2">Installation Steps for iOS:</p>
+            <ol className="text-sm text-gray-400 space-y-2 list-decimal list-inside">
+              <li>Tap the Share button in Safari</li>
+              <li>Scroll down and tap "Add to Home Screen"</li>
+              <li>Tap "Add" in the top right corner</li>
+            </ol>
+          </div>
+        ) : deferredPrompt ? (
+          <Button
+            onClick={handleInstall}
+            className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+            size="lg"
+          >
+            <Download className="w-5 h-5 mr-2" />
+            Install App
+          </Button>
         ) : (
-          <div className="space-y-4">
-            {deferredPrompt ? (
-              <Button onClick={handleInstall} className="w-full" size="lg">
-                <Download className="w-5 h-5 mr-2" />
-                Install App
-              </Button>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  To install this app:
-                </p>
-                <div className="text-left space-y-2 text-sm">
-                  <p><strong>On Chrome/Edge:</strong></p>
-                  <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                    <li>Tap the menu (⋮) in the browser</li>
-                    <li>Select "Install app" or "Add to Home screen"</li>
-                  </ol>
-                  <p className="mt-4"><strong>On Safari (iOS):</strong></p>
-                  <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                    <li>Tap the Share button</li>
-                    <li>Select "Add to Home Screen"</li>
-                  </ol>
-                </div>
-              </div>
-            )}
-            
-            <Button 
-              onClick={() => navigate("/")} 
-              variant="outline" 
-              className="w-full"
-            >
-              Continue in Browser
-            </Button>
+          <div className="bg-gray-800/50 rounded-lg p-4 mb-4">
+            <p className="text-white font-medium mb-2">Installation Steps:</p>
+            <ol className="text-sm text-gray-400 space-y-2 list-decimal list-inside">
+              <li>Click the menu button (⋮) in your browser</li>
+              <li>Select "Install app" or "Add to Home Screen"</li>
+              <li>Follow the prompts to complete installation</li>
+            </ol>
           </div>
         )}
 
-        <div className="pt-4 border-t space-y-2">
-          <h3 className="font-semibold">Why Install?</h3>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>✓ Works offline</li>
-            <li>✓ Quick access from home screen</li>
-            <li>✓ Native app experience</li>
-            <li>✓ Automatic updates</li>
-          </ul>
-        </div>
+        <Button
+          onClick={() => navigate('/')}
+          variant="outline"
+          className="w-full mt-4 border-green-500/30"
+        >
+          Continue in Browser
+        </Button>
       </Card>
     </div>
   );
