@@ -70,18 +70,16 @@ serve(async (req) => {
     }
 
     // Determine the Replicate model based on split type
-    let model = "adefossez/htdemucs:9e5da03ab38d79e8e50b65f5a7a1c2e80d4e1a0f";
-    let inputConfig: any = {
+    // Using cjwbw/demucs model for audio separation
+    const model = "cjwbw/demucs:25a173108cff36ef9f80f854c162d01df9e6528be175794b81158fa03836d953";
+    const inputConfig: any = {
       audio: `data:audio/wav;base64,${audio}`,
     };
 
-    if (splitType === "two-stems") {
-      inputConfig.stem = "vocals";
-    } else if (splitType === "four-stems") {
-      inputConfig.stem = "all";
-    } else if (splitType === "instrument" && instrument) {
-      inputConfig.stem = instrument;
-    }
+    // Note: The demucs model automatically separates into vocals, drums, bass, and other
+    // The splitType is mainly for UI purposes - we'll get all stems
+
+    console.log(`Calling Replicate API with model: ${model}`);
 
     // Call Replicate API
     const response = await fetch("https://api.replicate.com/v1/predictions", {
@@ -91,7 +89,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        version: "9e5da03ab38d79e8e50b65f5a7a1c2e80d4e1a0f",
+        version: "25a173108cff36ef9f80f854c162d01df9e6528be175794b81158fa03836d953",
         input: inputConfig,
       }),
     });
