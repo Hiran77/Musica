@@ -202,7 +202,7 @@ const Index = () => {
     const dataArray = new Uint8Array(bufferLength);
     
     let silenceStart = 0;
-    const SILENCE_THRESHOLD = 10; // Audio level threshold (0-255)
+    const SILENCE_THRESHOLD = 3; // Lower threshold - values below this are truly silent
     const SILENCE_DURATION = 7000; // 7 seconds of silence before auto-stop
     
     const checkAudioLevel = () => {
@@ -210,7 +210,7 @@ const Index = () => {
       
       analyser.getByteTimeDomainData(dataArray);
       
-      // Calculate average volume
+      // Calculate average volume (more accurate method)
       let sum = 0;
       for (let i = 0; i < bufferLength; i++) {
         const value = Math.abs(dataArray[i] - 128);
@@ -218,11 +218,11 @@ const Index = () => {
       }
       const average = sum / bufferLength;
       
-      // Detect silence
+      // Detect true silence (very low audio level)
       if (average < SILENCE_THRESHOLD) {
         if (silenceStart === 0) {
           silenceStart = Date.now();
-          console.log('Silence detected, average volume:', average);
+          console.log('True silence detected, average volume:', average);
         } else {
           const silenceDuration = Date.now() - silenceStart;
           if (silenceDuration > SILENCE_DURATION) {
@@ -238,10 +238,11 @@ const Index = () => {
           }
         }
       } else {
+        // Reset silence timer if any sound is detected
         if (silenceStart !== 0) {
-          console.log('Sound detected again, resetting silence timer');
+          console.log('Sound detected, volume:', average, '- resetting silence timer');
         }
-        silenceStart = 0; // Reset if sound detected
+        silenceStart = 0;
       }
       
       animationFrameRef.current = requestAnimationFrame(checkAudioLevel);
