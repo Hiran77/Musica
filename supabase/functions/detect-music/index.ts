@@ -62,8 +62,7 @@ serve(async (req) => {
     const acrcloudHost = Deno.env.get('ACRCLOUD_HOST');
     
     if (!acrcloudApiKey || !acrcloudApiSecret || !acrcloudHost) {
-      console.warn('ACRCloud credentials not configured, using mock response');
-      // Mock response for testing
+      console.warn('ACRCloud credentials not configured');
       return new Response(
         JSON.stringify({ 
           success: false,
@@ -73,24 +72,92 @@ serve(async (req) => {
       );
     }
 
-    // Here you would integrate with ACRCloud API
-    // For audio source separation, you could use Lovable AI with audio processing
-    // or integrate with a service like Spleeter or Demucs
+    // Prepare ACRCloud recognition request
+    const timestamp = Math.floor(Date.now() / 1000);
+    const stringToSign = `POST\n/v1/identify\n${acrcloudApiKey}\naudio\n1\n${timestamp}`;
     
-    console.log('Audio processed successfully');
-
-    // Mock response - replace with actual ACRCloud integration
-    return new Response(
-      JSON.stringify({ 
-        success: true,
-        song: {
-          title: "Sample Song",
-          artist: "Sample Artist",
-          album: "Sample Album"
-        }
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    // Create HMAC-SHA1 signature
+    const encoder = new TextEncoder();
+    const keyData = encoder.encode(acrcloudApiSecret);
+    const messageData = encoder.encode(stringToSign);
+    
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw',
+      keyData,
+      { name: 'HMAC', hash: 'SHA-1' },
+      false,
+      ['sign']
     );
+    
+    const signature = await crypto.subtle.sign('HMAC', cryptoKey, messageData);
+    const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
+
+    // Create multipart form data
+    const boundary = '----WebKitFormBoundary' + Math.random().toString(36).substring(2);
+    const formDataParts = [
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="sample"',
+      'Content-Type: audio/wav',
+      '',
+      new TextDecoder().decode(binaryAudio),
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="access_key"',
+      '',
+      acrcloudApiKey,
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="data_type"',
+      '',
+      'audio',
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="signature_version"',
+      '',
+      '1',
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="signature"',
+      '',
+      signatureBase64,
+      `--${boundary}`,
+      'Content-Disposition: form-data; name="timestamp"',
+      '',
+      timestamp.toString(),
+      `--${boundary}--`,
+    ].join('\r\n');
+
+    console.log('Calling ACRCloud API...');
+    
+    const acrResponse = await fetch(`https://${acrcloudHost}/v1/identify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
+      },
+      body: formDataParts,
+    });
+
+    const acrData = await acrResponse.json();
+    console.log('ACRCloud response:', JSON.stringify(acrData));
+
+    if (acrData.status?.code === 0 && acrData.metadata?.music?.[0]) {
+      const music = acrData.metadata.music[0];
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          song: {
+            title: music.title,
+            artist: music.artists?.[0]?.name || 'Unknown Artist',
+            album: music.album?.name || 'Unknown Album',
+          }
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } else {
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          message: 'No music detected in the audio sample',
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
   } catch (error: any) {
     console.error('Error in detect-music function:', error);
