@@ -558,8 +558,7 @@ const Index = () => {
           <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="detect">Audio Detection</TabsTrigger>
             <TabsTrigger value="lyrics">Lyrics Search</TabsTrigger>
-            <TabsTrigger value="splitter" disabled={!isPremium}>
-              <Lock className="h-3 w-3 mr-1" />
+            <TabsTrigger value="splitter">
               Audio Splitter
             </TabsTrigger>
           </TabsList>
@@ -869,36 +868,6 @@ const Index = () => {
                     Please sign in to access the audio splitter feature
                   </p>
                   <Button onClick={() => navigate("/auth")}>Sign In</Button>
-                </CardContent>
-              </Card>
-            ) : !isPremium ? (
-              <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-                <CardContent className="pt-6 text-center">
-                  <div className="rounded-full bg-primary/10 p-4 w-fit mx-auto mb-4">
-                    <Lock className="h-12 w-12 text-primary" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2">Premium Feature</h3>
-                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                    Unlock the Audio Splitter to separate vocals, instruments, and more from any audio file. 
-                    Upgrade to premium to access this powerful tool.
-                  </p>
-                  <div className="space-y-3 mb-6">
-                    <div className="flex items-center gap-2 text-sm">
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
-                      <span>Split vocals from music</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
-                      <span>Isolate individual instruments (guitar, piano, drums, etc.)</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
-                      <span>Professional-quality audio separation</span>
-                    </div>
-                  </div>
-                  <Button size="lg" className="bg-gradient-to-r from-primary to-primary/80">
-                    Upgrade to Premium
-                  </Button>
                 </CardContent>
               </Card>
             ) : (
