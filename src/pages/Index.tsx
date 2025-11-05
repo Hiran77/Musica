@@ -20,12 +20,25 @@ const Index = () => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingIntervalRef = useRef<number | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const silenceTimeoutRef = useRef<number | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     return () => {
       if (recordingIntervalRef.current) {
         clearInterval(recordingIntervalRef.current);
+      }
+      if (silenceTimeoutRef.current) {
+        clearTimeout(silenceTimeoutRef.current);
+      }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
       }
     };
   }, []);
@@ -124,6 +137,61 @@ const Index = () => {
     return Promise.resolve(new Blob([wav], { type: "audio/wav" }));
   };
 
+  const detectSilence = (stream: MediaStream) => {
+    // Create audio context and analyser
+    audioContextRef.current = new AudioContext();
+    const source = audioContextRef.current.createMediaStreamSource(stream);
+    const analyser = audioContextRef.current.createAnalyser();
+    analyser.fftSize = 2048;
+    analyser.smoothingTimeConstant = 0.8;
+    
+    source.connect(analyser);
+    analyserRef.current = analyser;
+    
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    
+    let silenceStart = 0;
+    const SILENCE_THRESHOLD = 10; // Audio level threshold (0-255)
+    const SILENCE_DURATION = 3000; // 3 seconds of silence before auto-stop
+    
+    const checkAudioLevel = () => {
+      if (!analyserRef.current || !isRecording) return;
+      
+      analyser.getByteTimeDomainData(dataArray);
+      
+      // Calculate average volume
+      let sum = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        const value = Math.abs(dataArray[i] - 128);
+        sum += value;
+      }
+      const average = sum / bufferLength;
+      
+      // Detect silence
+      if (average < SILENCE_THRESHOLD) {
+        if (silenceStart === 0) {
+          silenceStart = Date.now();
+          console.log('Silence detected, waiting...');
+        } else if (Date.now() - silenceStart > SILENCE_DURATION && recordingDuration >= 10) {
+          console.log('Auto-stopping due to silence');
+          toast({
+            title: "Audio stopped",
+            description: "Silence detected, processing recording...",
+          });
+          stopRecording();
+          return;
+        }
+      } else {
+        silenceStart = 0; // Reset if sound detected
+      }
+      
+      animationFrameRef.current = requestAnimationFrame(checkAudioLevel);
+    };
+    
+    checkAudioLevel();
+  };
+
   const startRecording = async () => {
     try {
       let stream: MediaStream;
@@ -181,6 +249,9 @@ const Index = () => {
       setDetectedSong(null);
       setRecordingDuration(0);
       
+      // Start silence detection
+      detectSilence(stream);
+      
       // Start duration timer
       recordingIntervalRef.current = window.setInterval(() => {
         setRecordingDuration(prev => prev + 1);
@@ -188,7 +259,7 @@ const Index = () => {
       
       toast({
         title: "Recording started",
-        description: `Recording ${captureMode === "tab" ? "tab" : "microphone"} audio. Stop when ready (minimum 10s recommended).`,
+        description: `Recording ${captureMode === "tab" ? "tab" : "microphone"} audio. Will auto-stop when audio ends.`,
       });
     } catch (error) {
       console.error("Error accessing audio:", error);
@@ -210,6 +281,16 @@ const Index = () => {
       if (recordingIntervalRef.current) {
         clearInterval(recordingIntervalRef.current);
         recordingIntervalRef.current = null;
+      }
+      
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+      
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
       }
     }
   };
@@ -337,7 +418,9 @@ const Index = () => {
                         <h3 className="font-semibold text-lg">Listening...</h3>
                         <p className="text-2xl font-bold text-primary">{recordingDuration}s</p>
                         <p className="text-sm text-muted-foreground mt-1">
-                          {recordingDuration < 10 ? "Keep recording (min 10s recommended)" : "Good! You can stop anytime"}
+                          {recordingDuration < 10 
+                            ? "Keep recording (min 10s recommended)" 
+                            : "Recording... Will auto-stop when audio ends"}
                         </p>
                       </div>
                     </div>
@@ -423,6 +506,7 @@ const Index = () => {
               <ul className="space-y-1 text-muted-foreground">
                 <li>• <strong>Tab Audio:</strong> Select the tab playing music when prompted</li>
                 <li>• <strong>Microphone:</strong> Position near speakers for best quality</li>
+                <li>• <strong>Auto-stop:</strong> Recording stops automatically after 3s of silence</li>
                 <li>• <strong>Duration:</strong> Record for 10-15s minimum, longer for difficult songs</li>
                 <li>• <strong>Background music:</strong> Record for 20-30s for scenes with dialogue</li>
                 <li>• Works with YouTube, Spotify, movies, TV shows, and live music</li>
