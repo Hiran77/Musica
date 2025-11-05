@@ -158,6 +158,10 @@ serve(async (req) => {
 
     if (acrData.status?.code === 0 && acrData.metadata?.music?.[0]) {
       const music = acrData.metadata.music[0];
+      const confidence = music.score || 0;
+      
+      console.log(`Detected: ${music.title} by ${music.artists?.[0]?.name} (${confidence}% confidence)`);
+      
       return new Response(
         JSON.stringify({ 
           success: true,
@@ -165,15 +169,21 @@ serve(async (req) => {
             title: music.title,
             artist: music.artists?.[0]?.name || 'Unknown Artist',
             album: music.album?.name || 'Unknown Album',
+            confidence: confidence,
           }
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } else {
+      const errorCode = acrData.status?.code;
+      const errorMsg = acrData.status?.msg || 'No music detected';
+      console.log(`Detection failed: ${errorMsg} (code: ${errorCode})`);
+      
       return new Response(
         JSON.stringify({ 
           success: false,
           message: 'No music detected in the audio sample',
+          errorCode: errorCode,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );

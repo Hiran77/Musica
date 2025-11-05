@@ -1,7 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mic, Music, Loader2, CheckCircle2, XCircle, MonitorPlay } from "lucide-react";
+import { Mic, Music, Loader2, CheckCircle2, XCircle, MonitorPlay, Radio } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,14 +10,25 @@ const Index = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [captureMode, setCaptureMode] = useState<"microphone" | "tab">("tab");
+  const [recordingDuration, setRecordingDuration] = useState(0);
   const [detectedSong, setDetectedSong] = useState<{
     title: string;
     artist: string;
     album?: string;
+    confidence?: number;
   } | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const recordingIntervalRef = useRef<number | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    return () => {
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+    };
+  }, []);
 
   const applyNoiseReduction = async (audioBlob: Blob): Promise<Blob> => {
     const audioContext = new AudioContext();
@@ -168,18 +179,17 @@ const Index = () => {
       mediaRecorder.start();
       setIsRecording(true);
       setDetectedSong(null);
+      setRecordingDuration(0);
+      
+      // Start duration timer
+      recordingIntervalRef.current = window.setInterval(() => {
+        setRecordingDuration(prev => prev + 1);
+      }, 1000);
       
       toast({
         title: "Recording started",
-        description: `Recording ${captureMode === "tab" ? "tab" : "microphone"} audio for 15 seconds...`,
+        description: `Recording ${captureMode === "tab" ? "tab" : "microphone"} audio. Stop when ready (minimum 10s recommended).`,
       });
-
-      // Auto-stop after 15 seconds
-      setTimeout(() => {
-        if (mediaRecorderRef.current?.state === "recording") {
-          stopRecording();
-        }
-      }, 15000);
     } catch (error) {
       console.error("Error accessing audio:", error);
       toast({
@@ -196,6 +206,11 @@ const Index = () => {
     if (mediaRecorderRef.current?.state === "recording") {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
     }
   };
 
@@ -220,15 +235,33 @@ const Index = () => {
 
         if (data.success && data.song) {
           setDetectedSong(data.song);
-          toast({
-            title: "Song detected!",
-            description: `${data.song.title} by ${data.song.artist}`,
-          });
+          const confidence = data.song.confidence || 0;
+          
+          if (confidence >= 80) {
+            toast({
+              title: "Song detected!",
+              description: `${data.song.title} by ${data.song.artist} (${confidence}% confidence)`,
+            });
+          } else if (confidence >= 60) {
+            toast({
+              title: "Possible match",
+              description: `${data.song.title} by ${data.song.artist} (${confidence}% confidence). Try recording longer for better accuracy.`,
+            });
+          } else {
+            toast({
+              title: "Low confidence match",
+              description: "Try recording for at least 15-20 seconds with clearer audio.",
+            });
+          }
         } else {
           setDetectedSong(null);
+          const message = recordingDuration < 10 
+            ? "Recording too short. Try recording for at least 10-15 seconds."
+            : "Could not identify the song. Try recording longer or move closer to the audio source.";
+          
           toast({
             title: "No match found",
-            description: "Could not identify the song. Try again with clearer audio.",
+            description: message,
             variant: "destructive",
           });
         }
@@ -295,16 +328,34 @@ const Index = () => {
             </Tabs>
 
             <div className="flex flex-col gap-4">
+              {isRecording && (
+                <Card className="border-primary/50 bg-primary/5 animate-pulse">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4">
+                      <Radio className="h-8 w-8 text-primary animate-pulse" />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg">Listening...</h3>
+                        <p className="text-2xl font-bold text-primary">{recordingDuration}s</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {recordingDuration < 10 ? "Keep recording (min 10s recommended)" : "Good! You can stop anytime"}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
               <Button
                 size="lg"
                 onClick={isRecording ? stopRecording : startRecording}
                 disabled={isProcessing}
                 className="h-16 text-lg"
+                variant={isRecording ? "destructive" : "default"}
               >
                 {isRecording ? (
                   <>
-                    <Mic className="mr-2 h-6 w-6 animate-pulse" />
-                    Stop Recording
+                    <Mic className="mr-2 h-6 w-6" />
+                    Stop Recording ({recordingDuration}s)
                   </>
                 ) : isProcessing ? (
                   <>
@@ -331,6 +382,19 @@ const Index = () => {
                           <p className="text-sm text-muted-foreground mt-1">
                             Album: {detectedSong.album}
                           </p>
+                        )}
+                        {detectedSong.confidence && (
+                          <div className="mt-3 flex items-center gap-2">
+                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-green-500 transition-all duration-500"
+                                style={{ width: `${detectedSong.confidence}%` }}
+                              />
+                            </div>
+                            <span className="text-sm font-medium text-green-600">
+                              {detectedSong.confidence}%
+                            </span>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -359,7 +423,8 @@ const Index = () => {
               <ul className="space-y-1 text-muted-foreground">
                 <li>• <strong>Tab Audio:</strong> Select the tab playing music when prompted</li>
                 <li>• <strong>Microphone:</strong> Position near speakers for best quality</li>
-                <li>• Record for at least 10-15 seconds</li>
+                <li>• <strong>Duration:</strong> Record for 10-15s minimum, longer for difficult songs</li>
+                <li>• <strong>Background music:</strong> Record for 20-30s for scenes with dialogue</li>
                 <li>• Works with YouTube, Spotify, movies, TV shows, and live music</li>
               </ul>
             </div>
