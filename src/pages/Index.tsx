@@ -6,6 +6,7 @@ import { Mic, Music, Loader2, CheckCircle2, XCircle, MonitorPlay, Radio, Youtube
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { LyricsSearch } from "@/components/LyricsSearch";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -440,17 +441,24 @@ const Index = () => {
           </div>
           <h1 className="mb-2 text-4xl font-bold tracking-tight">Musica</h1>
           <p className="text-lg text-muted-foreground">
-            Detect background music even with dialogue
+            Detect music by sound or search by lyrics
           </p>
         </div>
 
-        <Card className="border-2 shadow-lg">
-          <CardHeader>
-            <CardTitle>How it works</CardTitle>
-            <CardDescription>
-              Our AI separates music from speech and identifies songs playing in the background
-            </CardDescription>
-          </CardHeader>
+        <Tabs defaultValue="detect" className="w-full mb-6">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="detect">Audio Detection</TabsTrigger>
+            <TabsTrigger value="lyrics">Lyrics Search</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="detect" className="space-y-6">
+            <Card className="border-2 shadow-lg">
+              <CardHeader>
+                <CardTitle>How it works</CardTitle>
+                <CardDescription>
+                  Our AI separates music from speech and identifies songs playing in the background
+                </CardDescription>
+              </CardHeader>
           <CardContent className="space-y-6">
             <Tabs value={captureMode} onValueChange={(v) => setCaptureMode(v as "microphone" | "tab")} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
@@ -687,6 +695,31 @@ const Index = () => {
             </div>
           </CardContent>
         </Card>
+          </TabsContent>
+
+          <TabsContent value="lyrics" className="space-y-6">
+            <LyricsSearch />
+          </TabsContent>
+        </Tabs>
+
+        <div className="mt-6 flex gap-4 justify-center">
+          {user ? (
+            <>
+              <Button variant="outline" onClick={() => navigate("/dashboard")}>
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Dashboard
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/history")}>
+                History
+              </Button>
+            </>
+          ) : (
+            <Button onClick={() => navigate("/auth")}>
+              <User className="h-4 w-4 mr-2" />
+              Login / Sign Up
+            </Button>
+          )}
+        </div>
       </div>
       </div>
     </div>
