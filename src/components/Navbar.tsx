@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Music, Home, LayoutDashboard, LogIn, LogOut, Menu, X } from 'lucide-react';
+import { Music, Home, LayoutDashboard, LogIn, LogOut, Menu, X, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -56,7 +56,10 @@ export const Navbar = () => {
 
   const navLinks = [
     { path: '/', label: 'Home', icon: Home },
-    ...(user ? [{ path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }] : []),
+    ...(user ? [
+      { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { path: '/admin', label: 'Admin', icon: Settings }
+    ] : []),
   ];
 
   return (
