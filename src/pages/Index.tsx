@@ -430,55 +430,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Header */}
-      <header className="border-b border-green-500/20 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center">
-              <Music className="w-5 h-5 text-white" />
-            </div>
-            <h1 className="text-xl font-bold text-white">Music Detector</h1>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {user ? (
-              <>
-                <Button
-                  onClick={() => navigate('/dashboard')}
-                  variant="outline"
-                  className="border-green-500/30"
-                  size="sm"
-                >
-                  <BarChart3 className="w-4 h-4 mr-2" />
-                  Dashboard
-                </Button>
-                <Button
-                  onClick={async () => {
-                    await supabase.auth.signOut();
-                    toast({ title: "Signed out successfully" });
-                  }}
-                  variant="outline"
-                  className="border-red-500/30 text-red-400"
-                  size="sm"
-                >
-                  Sign Out
-                </Button>
-              </>
-            ) : (
-              <Button
-                onClick={() => navigate('/auth')}
-                variant="outline"
-                className="border-green-500/30"
-                size="sm"
-              >
-                <User className="w-4 h-4 mr-2" />
-                Sign In
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
-
       <div className="p-4">
       <div className="container mx-auto max-w-2xl pt-8">
         <div className="mb-8 text-center">
@@ -487,7 +438,7 @@ const Index = () => {
               <Music className="h-12 w-12 text-primary" />
             </div>
           </div>
-          <h1 className="mb-2 text-4xl font-bold tracking-tight">Music Detector</h1>
+          <h1 className="mb-2 text-4xl font-bold tracking-tight">Musica</h1>
           <p className="text-lg text-muted-foreground">
             Detect background music even with dialogue
           </p>
