@@ -156,7 +156,7 @@ const Index = () => {
     const SILENCE_DURATION = 7000; // 7 seconds of silence before auto-stop
     
     const checkAudioLevel = () => {
-      if (!analyserRef.current || !isRecording) return;
+      if (!analyserRef.current) return;
       
       analyser.getByteTimeDomainData(dataArray);
       
@@ -172,17 +172,25 @@ const Index = () => {
       if (average < SILENCE_THRESHOLD) {
         if (silenceStart === 0) {
           silenceStart = Date.now();
-          console.log('Silence detected, waiting...');
-        } else if (Date.now() - silenceStart > SILENCE_DURATION && recordingDuration >= 10) {
-          console.log('Auto-stopping due to silence');
-          toast({
-            title: "Audio stopped",
-            description: "Silence detected, processing recording...",
-          });
-          stopRecording();
-          return;
+          console.log('Silence detected, average volume:', average);
+        } else {
+          const silenceDuration = Date.now() - silenceStart;
+          if (silenceDuration > SILENCE_DURATION) {
+            console.log('Auto-stopping due to 7s silence, duration:', recordingDuration);
+            if (mediaRecorderRef.current?.state === "recording") {
+              toast({
+                title: "Audio stopped",
+                description: "Silence detected, processing recording...",
+              });
+              stopRecording();
+            }
+            return;
+          }
         }
       } else {
+        if (silenceStart !== 0) {
+          console.log('Sound detected again, resetting silence timer');
+        }
         silenceStart = 0; // Reset if sound detected
       }
       
