@@ -1,22 +1,35 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Music, Mail, Lock, User } from 'lucide-react';
+import { Music, Mail, Lock, User, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check for auth errors in URL (from OAuth redirects)
+    const error = searchParams.get('error');
+    const errorDescription = searchParams.get('error_description');
+    
+    if (error) {
+      setAuthError(errorDescription || 'Authentication failed');
+    }
+  }, [searchParams]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,17 +91,37 @@ const Auth = () => {
 
       if (error) throw error;
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      const errorMessage = error.message || 'Authentication failed';
+      
+      // Handle specific provider not enabled error
+      if (errorMessage.includes('provider') || errorMessage.includes('not enabled')) {
+        toast({
+          title: "Provider Not Enabled",
+          description: `${provider.charAt(0).toUpperCase() + provider.slice(1)} sign-in is not configured yet. Please use email/password or contact support.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Authentication Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black flex items-center justify-center p-4">
       <Card className="max-w-md w-full p-8 bg-gray-900/50 border-green-500/20">
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/')}
+          className="mb-4 text-gray-400 hover:text-white"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
+        </Button>
+
         <div className="flex justify-center mb-6">
           <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center">
             <Music className="w-8 h-8 text-white" />
@@ -101,6 +134,12 @@ const Auth = () => {
         <p className="text-gray-400 text-center mb-6">
           {isLogin ? 'Sign in to access your music history' : 'Start detecting and tracking your music'}
         </p>
+
+        {authError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{authError}</AlertDescription>
+          </Alert>
+        )}
 
         <form onSubmit={handleAuth} className="space-y-4">
           {!isLogin && (
