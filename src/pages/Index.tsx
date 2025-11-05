@@ -309,6 +309,7 @@ const Index = () => {
     
     return {
       youtube: `https://www.youtube.com/results?search_query=${encodedQuery}`,
+      youtubeEmbed: `https://www.youtube.com/embed?listType=search&list=${encodedQuery}`,
       spotify: `https://open.spotify.com/search/${encodedQuery}`,
       appleMusic: `https://music.apple.com/search?term=${encodedQuery}`,
       soundcloud: `https://soundcloud.com/search?q=${encodedQuery}`,
@@ -502,7 +503,21 @@ const Index = () => {
                         )}
                         
                         <div className="mt-4 pt-4 border-t border-green-500/20">
-                          <h4 className="text-sm font-semibold mb-3">Listen on:</h4>
+                          <h4 className="text-sm font-semibold mb-3">Now Playing:</h4>
+                          <div className="mb-4 rounded-lg overflow-hidden bg-black/5">
+                            <iframe
+                              width="100%"
+                              height="200"
+                              src={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).youtubeEmbed}
+                              title="YouTube Music Player"
+                              frameBorder="0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              className="w-full"
+                            />
+                          </div>
+                          
+                          <h4 className="text-sm font-semibold mb-3">Or listen on:</h4>
                           <div className="grid grid-cols-2 gap-2">
                             <Button
                               variant="outline"
