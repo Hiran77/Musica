@@ -88,8 +88,9 @@ Make sure to add these secrets in Lovable Cloud:
 | Feature | Web App | Extension | Mobile |
 |---------|---------|-----------|--------|
 | Tab Audio | ✅ | ✅ | ❌ |
-| Microphone | ✅ | ✅ | ✅ |
 | System Audio | ❌ | ❌ | ✅ |
+| Microphone | ✅ | ✅ | ✅ |
+| Toggle Switch | ❌ | ❌ | ✅ (System/Mic) |
 | Lyrics Search | ✅ | ✅ | ✅ |
 | Audio Splitter | ✅ | ✅ | ✅ |
 | History | ✅ | ✅ | ✅ |

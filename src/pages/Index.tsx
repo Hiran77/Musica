@@ -2,14 +2,17 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mic, Music, Loader2, CheckCircle2, XCircle, MonitorPlay, Radio, Youtube, Music2, Apple, Cloud, ShoppingCart, ExternalLink, User, BarChart3, RotateCcw, Heart } from "lucide-react";
+import { Mic, Music, Loader2, CheckCircle2, XCircle, MonitorPlay, Radio, Youtube, Music2, Apple, Cloud, ShoppingCart, ExternalLink, User, BarChart3, RotateCcw, Heart, Speaker } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { LyricsSearch } from "@/components/LyricsSearch";
 import { AudioSplitter } from "@/components/AudioSplitter";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Lock } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -17,8 +20,9 @@ const Index = () => {
   const { isPremium, isLoading: roleLoading } = useUserRole();
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [captureMode, setCaptureMode] = useState<"microphone" | "tab">("tab");
+  const [captureMode, setCaptureMode] = useState<"microphone" | "tab" | "system">("tab");
   const [recordingDuration, setRecordingDuration] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const MAX_RECORD_SECONDS = 30;
   const [detectedSong, setDetectedSong] = useState<{
     title: string;
@@ -39,6 +43,13 @@ const Index = () => {
 
   useEffect(() => {
     checkUser();
+    
+    // Check if running on mobile
+    const isNativePlatform = Capacitor.isNativePlatform();
+    setIsMobile(isNativePlatform);
+    if (isNativePlatform) {
+      setCaptureMode("system");
+    }
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
@@ -378,9 +389,10 @@ const Index = () => {
         });
       }, 1000);
       
+      const modeText = captureMode === "tab" ? "tab" : captureMode === "system" ? "system" : "microphone";
       toast({
         title: "Recording started",
-        description: `Recording ${captureMode === "tab" ? "tab" : "microphone"} audio. Will auto-stop when audio ends.`,
+        description: `Recording ${modeText} audio. Will auto-stop when audio ends.`,
       });
     } catch (error) {
       console.error("Error accessing audio:", error);
@@ -572,30 +584,58 @@ const Index = () => {
                 </CardDescription>
               </CardHeader>
           <CardContent className="space-y-6">
-            <Tabs value={captureMode} onValueChange={(v) => setCaptureMode(v as "microphone" | "tab")} className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="tab" className="flex items-center gap-2">
-                  <MonitorPlay className="h-4 w-4" />
-                  Tab Audio
-                </TabsTrigger>
-                <TabsTrigger value="microphone" className="flex items-center gap-2">
-                  <Mic className="h-4 w-4" />
-                  Microphone
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="tab" className="mt-4">
-                <p className="text-sm text-muted-foreground mb-4">
-                  Capture audio directly from YouTube, Spotify, or any browser tab
-                </p>
-              </TabsContent>
-              
-              <TabsContent value="microphone" className="mt-4">
-                <p className="text-sm text-muted-foreground mb-4">
-                  Record music playing near your device's microphone
-                </p>
-              </TabsContent>
-            </Tabs>
+            {isMobile ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
+                  <div className="flex items-center gap-3">
+                    {captureMode === "system" ? (
+                      <Speaker className="h-5 w-5 text-primary" />
+                    ) : (
+                      <Mic className="h-5 w-5 text-primary" />
+                    )}
+                    <div>
+                      <Label className="text-base font-medium">
+                        {captureMode === "system" ? "System Audio" : "Microphone"}
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        {captureMode === "system" 
+                          ? "Detect audio playing on this device" 
+                          : "Record from microphone"}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch 
+                    checked={captureMode === "microphone"}
+                    onCheckedChange={(checked) => setCaptureMode(checked ? "microphone" : "system")}
+                  />
+                </div>
+              </div>
+            ) : (
+              <Tabs value={captureMode} onValueChange={(v) => setCaptureMode(v as "microphone" | "tab")} className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="tab" className="flex items-center gap-2">
+                    <MonitorPlay className="h-4 w-4" />
+                    Tab Audio
+                  </TabsTrigger>
+                  <TabsTrigger value="microphone" className="flex items-center gap-2">
+                    <Mic className="h-4 w-4" />
+                    Microphone
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="tab" className="mt-4">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Capture audio directly from YouTube, Spotify, or any browser tab
+                  </p>
+                </TabsContent>
+                
+                <TabsContent value="microphone" className="mt-4">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Record music playing near your device's microphone
+                  </p>
+                </TabsContent>
+              </Tabs>
+            )}
 
             <div className="flex flex-col gap-4">
               {isRecording && (
@@ -842,12 +882,23 @@ const Index = () => {
             <div className="rounded-lg bg-muted/50 p-4 text-sm">
               <h4 className="font-semibold mb-2">Tips for best results:</h4>
               <ul className="space-y-1 text-muted-foreground">
-                <li>• <strong>Tab Audio:</strong> Select the tab playing music when prompted</li>
-                <li>• <strong>Microphone:</strong> Position near speakers for best quality</li>
-                <li>• <strong>Auto-stop:</strong> Recording stops automatically after 7s of silence</li>
-                <li>• <strong>Duration:</strong> Record for 10-15s minimum, longer for difficult songs</li>
-                <li>• <strong>Background music:</strong> Record for 20-30s for scenes with dialogue</li>
-                <li>• Works with YouTube, Spotify, movies, TV shows, and live music</li>
+                {isMobile ? (
+                  <>
+                    <li>• <strong>System Audio:</strong> Detect music playing on your device</li>
+                    <li>• <strong>Microphone:</strong> Position near speakers for best quality</li>
+                    <li>• <strong>Duration:</strong> Record for 10-15s minimum, longer for difficult songs</li>
+                    <li>• <strong>Background music:</strong> Record for 20-30s for scenes with dialogue</li>
+                  </>
+                ) : (
+                  <>
+                    <li>• <strong>Tab Audio:</strong> Select the tab playing music when prompted</li>
+                    <li>• <strong>Microphone:</strong> Position near speakers for best quality</li>
+                    <li>• <strong>Auto-stop:</strong> Recording stops automatically after 7s of silence</li>
+                    <li>• <strong>Duration:</strong> Record for 10-15s minimum, longer for difficult songs</li>
+                    <li>• <strong>Background music:</strong> Record for 20-30s for scenes with dialogue</li>
+                    <li>• Works with YouTube, Spotify, movies, TV shows, and live music</li>
+                  </>
+                )}
               </ul>
             </div>
           </CardContent>
