@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Music Detector",
+  "version": "1.0.0",
+  "description": "Detect music playing in your browser tabs",
+  "permissions": [
+    "tabCapture",
+    "activeTab",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "pwa-192x192.png",
+      "48": "pwa-192x192.png",
+      "128": "pwa-512x512.png"
+    }
+  },
+  "icons": {
+    "16": "pwa-192x192.png",
+    "48": "pwa-192x192.png",
+    "128": "pwa-512x512.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
