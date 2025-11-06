@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "./components/AppSidebar";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Index from "./pages/Index";
 import Install from "./pages/Install";
@@ -23,18 +25,41 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Navbar />
-          <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/install" element={<Install />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/admin" element={<Admin />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-          </Routes>
+          <SidebarProvider defaultOpen={true}>
+            <div className="flex min-h-screen w-full">
+              {/* Sidebar - hidden on mobile, visible on lg+ */}
+              <div className="hidden lg:block">
+                <AppSidebar />
+              </div>
+              
+              <div className="flex-1 flex flex-col w-full">
+                {/* Mobile navbar */}
+                <div className="lg:hidden">
+                  <Navbar />
+                </div>
+                
+                {/* Desktop trigger */}
+                <div className="hidden lg:flex h-14 items-center border-b px-4 bg-background/95 backdrop-blur">
+                  <SidebarTrigger />
+                  <h1 className="ml-4 text-lg font-semibold">Musica</h1>
+                </div>
+                
+                <main className="flex-1">
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/install" element={<Install />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/admin" element={<Admin />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+              </div>
+            </div>
+          </SidebarProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
