@@ -13,6 +13,7 @@ import { AudioSplitter } from "@/components/AudioSplitter";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Lock } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const Index = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [captureMode, setCaptureMode] = useState<"microphone" | "tab" | "system">("tab");
   const [recordingDuration, setRecordingDuration] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const MAX_RECORD_SECONDS = 30;
   const [detectedSong, setDetectedSong] = useState<{
     title: string;
@@ -44,10 +45,8 @@ const Index = () => {
   useEffect(() => {
     checkUser();
     
-    // Check if running on mobile
-    const isNativePlatform = Capacitor.isNativePlatform();
-    setIsMobile(isNativePlatform);
-    if (isNativePlatform) {
+    // Set initial capture mode for mobile
+    if (isMobile || Capacitor.isNativePlatform()) {
       setCaptureMode("system");
     }
     
@@ -56,7 +55,7 @@ const Index = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [isMobile]);
 
   const checkUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
