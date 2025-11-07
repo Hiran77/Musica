@@ -552,396 +552,553 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="p-3 sm:p-4 md:p-6 lg:p-8">
-      <div className="container mx-auto max-w-4xl">
-        <div className="mb-6 sm:mb-8 text-center">
-          <div className="mb-3 sm:mb-4 flex justify-center">
-            <div className="rounded-full bg-primary/10 p-3 sm:p-4">
-              <Music className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-primary" />
-            </div>
+      {/* Mobile Shazam-like UI */}
+      {isMobile ? (
+        <div className="flex-1 flex flex-col p-4">
+          {/* Header */}
+          <div className="text-center pt-8 pb-4">
+            <h1 className="text-3xl font-bold tracking-tight mb-2">Musica</h1>
+            <p className="text-sm text-muted-foreground">
+              {captureMode === "system" ? "System Audio Detection" : "Microphone Detection"}
+            </p>
           </div>
-          <h1 className="mb-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">Musica</h1>
-          <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4">
-            Detect music by sound or search by lyrics
-          </p>
-        </div>
 
-        <Tabs defaultValue="detect" className="w-full mb-4 sm:mb-6">
-          <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6 h-auto">
-            <TabsTrigger value="detect" className="text-xs sm:text-sm py-2 sm:py-2.5">
-              <span className="hidden sm:inline">Audio Detection</span>
-              <span className="sm:hidden">Detect</span>
-            </TabsTrigger>
-            <TabsTrigger value="lyrics" className="text-xs sm:text-sm py-2 sm:py-2.5">
-              <span className="hidden sm:inline">Lyrics Search</span>
-              <span className="sm:hidden">Lyrics</span>
-            </TabsTrigger>
-            <TabsTrigger value="splitter" className="text-xs sm:text-sm py-2 sm:py-2.5">
-              <span className="hidden sm:inline">Audio Splitter</span>
-              <span className="sm:hidden">Splitter</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="detect" className="space-y-4 sm:space-y-6">
-            <Card className="border-2 shadow-lg">
-              <CardHeader className="p-4 sm:p-6">
-                <CardTitle className="text-lg sm:text-xl">How it works</CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  Our AI separates music from speech and identifies songs playing in the background
-                </CardDescription>
-              </CardHeader>
-          <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-            {isMobile ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 sm:p-4 rounded-lg border bg-card">
-                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                    {captureMode === "system" ? (
-                      <Speaker className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                    ) : (
-                      <Mic className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <Label className="text-sm sm:text-base font-medium block">
-                        {captureMode === "system" ? "System Audio" : "Microphone"}
-                      </Label>
-                      <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                        {captureMode === "system" 
-                          ? "Detect audio playing on device" 
-                          : "Record from microphone"}
-                      </p>
-                    </div>
-                  </div>
-                  <Switch 
-                    checked={captureMode === "microphone"}
-                    onCheckedChange={(checked) => setCaptureMode(checked ? "microphone" : "system")}
-                    className="flex-shrink-0"
-                  />
-                </div>
-              </div>
-            ) : (
-              <Tabs value={captureMode} onValueChange={(v) => setCaptureMode(v as "microphone" | "tab")} className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="tab" className="flex items-center gap-2 text-sm">
-                    <MonitorPlay className="h-4 w-4" />
-                    <span className="hidden sm:inline">Tab Audio</span>
-                    <span className="sm:hidden">Tab</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="microphone" className="flex items-center gap-2 text-sm">
-                    <Mic className="h-4 w-4" />
-                    <span className="hidden sm:inline">Microphone</span>
-                    <span className="sm:hidden">Mic</span>
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="tab" className="mt-3 sm:mt-4">
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-4">
-                    Capture audio directly from YouTube, Spotify, or any browser tab
-                  </p>
-                </TabsContent>
-                
-                <TabsContent value="microphone" className="mt-3 sm:mt-4">
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-4">
-                    Record music playing near your device's microphone
-                  </p>
-                </TabsContent>
-              </Tabs>
-            )}
-
-            <div className="flex flex-col gap-4">
+          {/* Main Content - Centered */}
+          <div className="flex-1 flex flex-col items-center justify-center space-y-8 pb-20">
+            {/* Large Circular Button - Shazam Style */}
+            <div className="relative">
+              {/* Pulse Animation Ring when recording */}
               {isRecording && (
-                <Card className="border-primary/50 bg-primary/5 animate-pulse">
-                  <CardContent className="pt-4 sm:pt-6 px-3 sm:px-6">
-                    <div className="flex items-center gap-3 sm:gap-4">
-                      <Radio className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-pulse flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-base sm:text-lg">Listening...</h3>
-                        <p className="text-xl sm:text-2xl font-bold text-primary">{recordingDuration}s</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                          {recordingDuration < 10 
-                            ? "Keep recording (min 10s)" 
-                            : "Recording... Auto-stop on silence"}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" style={{ animationDuration: '2s' }} />
               )}
               
-              <Button
-                size="lg"
+              {/* Main Button */}
+              <button
                 onClick={isRecording ? stopRecording : startRecording}
                 disabled={isProcessing}
-                className="h-14 sm:h-16 text-base sm:text-lg w-full"
-                variant={isRecording ? "destructive" : "default"}
+                className={`
+                  relative w-56 h-56 rounded-full flex flex-col items-center justify-center gap-3
+                  transition-all duration-300 shadow-2xl
+                  ${isRecording 
+                    ? 'bg-destructive text-destructive-foreground scale-95' 
+                    : isProcessing
+                    ? 'bg-muted text-muted-foreground'
+                    : 'bg-gradient-to-br from-primary via-primary to-primary-glow text-primary-foreground'
+                  }
+                  ${!isProcessing && !isRecording ? 'hover:scale-105 active:scale-95' : ''}
+                  disabled:opacity-50
+                `}
+                style={{
+                  boxShadow: isRecording 
+                    ? '0 0 60px hsl(var(--destructive) / 0.5)' 
+                    : '0 0 60px hsl(var(--primary) / 0.4)'
+                }}
               >
-                {isRecording ? (
+                {isProcessing ? (
                   <>
-                    <Mic className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
-                    <span className="hidden sm:inline">Stop Recording ({recordingDuration}s)</span>
-                    <span className="sm:hidden">Stop ({recordingDuration}s)</span>
+                    <Loader2 className="h-16 w-16 animate-spin" />
+                    <span className="text-sm font-medium">Processing...</span>
                   </>
-                ) : isProcessing ? (
+                ) : isRecording ? (
                   <>
-                    <Loader2 className="mr-2 h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
-                    Processing...
+                    <div className="w-12 h-12 rounded bg-white/90" />
+                    <span className="text-2xl font-bold">{recordingDuration}s</span>
+                    <span className="text-xs opacity-90">Tap to stop</span>
                   </>
                 ) : (
                   <>
-                    <Mic className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
-                    Start Recording
+                    {captureMode === "system" ? (
+                      <Speaker className="h-20 w-20" />
+                    ) : (
+                      <Mic className="h-20 w-20" />
+                    )}
+                    <span className="text-sm font-medium">Tap to detect</span>
                   </>
                 )}
-              </Button>
+              </button>
+            </div>
 
-              {detectedSong && (
-                <>
-                  {/* Success Banner */}
-                  <Card className="border-green-500/50 bg-gradient-to-r from-green-500/10 to-emerald-500/10">
-                    <CardContent className="pt-4 sm:pt-6 px-3 sm:px-6">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-                        <div className="flex items-center gap-2 sm:gap-3 flex-1">
-                          <div className="rounded-full bg-green-500/20 p-1.5 sm:p-2 flex-shrink-0">
-                            <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
-                          </div>
-                          <div className="min-w-0">
-                            <h3 className="font-semibold text-base sm:text-lg">Song Identified!</h3>
-                            <p className="text-xs sm:text-sm text-muted-foreground">
-                              {isSaved ? "Saved to history" : user ? "Auto-saved" : "Sign in to save"}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2 w-full sm:w-auto">
-                          <Button
-                            onClick={handleRetry}
-                            variant="outline"
-                            size="sm"
-                            className="gap-2 flex-1 sm:flex-initial"
-                          >
-                            <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
-                            <span className="hidden sm:inline">Retry</span>
-                            <span className="sm:hidden">Retry</span>
-                          </Button>
-                          {user && !isSaved && (
-                            <Button
-                              onClick={() => saveDetectionToHistory(detectedSong)}
-                              variant="default"
-                              size="sm"
-                              className="gap-2 flex-1 sm:flex-initial"
-                            >
-                              <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
-                              <span className="hidden sm:inline">Save</span>
-                              <span className="sm:hidden">Save</span>
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Detection Results */}
-                  <Card className="border-green-500/50 bg-green-500/5">
-                    <CardContent className="pt-4 sm:pt-6 px-3 sm:px-6">
-                      <div className="flex items-start gap-2 sm:gap-3">
-                        <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 flex-shrink-0 mt-1" />
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-base sm:text-lg break-words">{detectedSong.title}</h3>
-                          <p className="text-sm sm:text-base text-muted-foreground break-words">{detectedSong.artist}</p>
-                          {detectedSong.album && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                              Album: {detectedSong.album}
-                            </p>
-                          )}
-                          {detectedSong.confidence && (
-                            <div className="mt-3 flex items-center gap-2">
-                              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full bg-green-500 transition-all duration-500"
-                                  style={{ width: `${detectedSong.confidence}%` }}
-                                />
-                              </div>
-                              <span className="text-sm font-medium text-green-600">
-                                {detectedSong.confidence}%
-                              </span>
-                            </div>
-                          )}
-                        
-                        <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-green-500/20">
-                          <h4 className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3">Now Playing:</h4>
-                          <div className="mb-3 sm:mb-4 rounded-lg overflow-hidden bg-black/5">
-                            <iframe
-                              width="100%"
-                              height="200"
-                              src={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).youtubeEmbed}
-                              title="YouTube Music Player"
-                              frameBorder="0"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                              allowFullScreen
-                              referrerPolicy="strict-origin-when-cross-origin"
-                              className="w-full aspect-video sm:aspect-auto"
-                            />
-                          </div>
-                          
-                          <h4 className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3">Or listen on:</h4>
-                          <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="justify-start gap-1.5 sm:gap-2 bg-red-500/10 border-red-500/20 hover:bg-red-500/20 hover:border-red-500/30 text-xs sm:text-sm px-2 sm:px-3"
-                              asChild
-                            >
-                              <a
-                                href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).youtube}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <Youtube className="h-3 w-3 sm:h-4 sm:w-4 text-red-500 flex-shrink-0" />
-                                <span className="hidden xs:inline">YouTube</span>
-                                <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3 ml-auto opacity-50" />
-                              </a>
-                            </Button>
-                            
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="justify-start gap-1.5 sm:gap-2 bg-green-500/10 border-green-500/20 hover:bg-green-500/20 hover:border-green-500/30 text-xs sm:text-sm px-2 sm:px-3"
-                              asChild
-                            >
-                              <a
-                                href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).spotify}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <Music2 className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 flex-shrink-0" />
-                                <span className="hidden xs:inline">Spotify</span>
-                                <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3 ml-auto opacity-50" />
-                              </a>
-                            </Button>
-                            
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="justify-start gap-1.5 sm:gap-2 bg-pink-500/10 border-pink-500/20 hover:bg-pink-500/20 hover:border-pink-500/30 text-xs sm:text-sm px-2 sm:px-3"
-                              asChild
-                            >
-                              <a
-                                href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).appleMusic}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <Apple className="h-3 w-3 sm:h-4 sm:w-4 text-pink-500 flex-shrink-0" />
-                                <span className="hidden xs:inline">Apple</span>
-                                <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3 ml-auto opacity-50" />
-                              </a>
-                            </Button>
-                            
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="justify-start gap-1.5 sm:gap-2 bg-orange-500/10 border-orange-500/20 hover:bg-orange-500/20 hover:border-orange-500/30 text-xs sm:text-sm px-2 sm:px-3"
-                              asChild
-                            >
-                              <a
-                                href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).soundcloud}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <Cloud className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500 flex-shrink-0" />
-                                <span className="hidden xs:inline">SoundCloud</span>
-                                <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3 ml-auto opacity-50" />
-                              </a>
-                            </Button>
-                            
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="justify-start gap-1.5 sm:gap-2 col-span-2 bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/20 hover:border-blue-500/30 text-xs sm:text-sm px-2 sm:px-3"
-                              asChild
-                            >
-                              <a
-                                href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).amazonMusic}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500 flex-shrink-0" />
-                                <span className="hidden xs:inline">Amazon Music</span>
-                                <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3 ml-auto opacity-50" />
-                              </a>
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </>
+            {/* Recording Status */}
+            {isRecording && (
+              <div className="text-center space-y-2 animate-fade-in">
+                <p className="text-lg font-semibold">Listening...</p>
+                <p className="text-sm text-muted-foreground">
+                  {recordingDuration < 10 
+                    ? "Keep recording (min 10s)" 
+                    : "Auto-stops on silence"}
+                </p>
+              </div>
             )}
 
-              {!detectedSong && !isRecording && !isProcessing && (
-                <Card className="border-muted">
-                  <CardContent className="pt-4 sm:pt-6 px-3 sm:px-6">
-                    <div className="flex items-start gap-2 sm:gap-3">
-                      <XCircle className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground flex-shrink-0 mt-1" />
-                      <div>
-                        <p className="text-xs sm:text-sm text-muted-foreground">
-                          No song detected yet. Start recording to identify background music.
-                        </p>
+            {/* Mode Toggle */}
+            {!isRecording && !isProcessing && !detectedSong && (
+              <button
+                onClick={() => setCaptureMode(captureMode === "system" ? "microphone" : "system")}
+                className="flex items-center gap-3 px-6 py-3 rounded-full bg-card border-2 border-border hover:border-primary transition-colors"
+              >
+                {captureMode === "system" ? (
+                  <>
+                    <Speaker className="h-5 w-5 text-primary" />
+                    <div className="text-left">
+                      <p className="text-sm font-medium">System Audio</p>
+                      <p className="text-xs text-muted-foreground">Tap to switch to mic</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Mic className="h-5 w-5 text-primary" />
+                    <div className="text-left">
+                      <p className="text-sm font-medium">Microphone</p>
+                      <p className="text-xs text-muted-foreground">Tap to switch to system</p>
+                    </div>
+                  </>
+                )}
+              </button>
+            )}
+
+            {/* Detection Result - Compact for Mobile */}
+            {detectedSong && (
+              <div className="w-full max-w-sm space-y-4 animate-fade-in">
+                <Card className="border-green-500/50 bg-green-500/5">
+                  <CardContent className="pt-6">
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="rounded-full bg-green-500/20 p-2">
+                        <CheckCircle2 className="h-6 w-6 text-green-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-xl break-words">{detectedSong.title}</h3>
+                        <p className="text-base text-muted-foreground break-words">{detectedSong.artist}</p>
+                        {detectedSong.confidence && (
+                          <div className="mt-3 flex items-center gap-2">
+                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-green-500 transition-all duration-500"
+                                style={{ width: `${detectedSong.confidence}%` }}
+                              />
+                            </div>
+                            <span className="text-sm font-medium text-green-600">
+                              {detectedSong.confidence}%
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleRetry}
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 flex-1"
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                        Retry
+                      </Button>
+                      {user && !isSaved && (
+                        <Button
+                          onClick={() => saveDetectionToHistory(detectedSong)}
+                          variant="default"
+                          size="sm"
+                          className="gap-2 flex-1"
+                        >
+                          <Heart className="h-4 w-4" />
+                          Save
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Music Platforms - Compact Grid */}
+                    <div className="mt-4 pt-4 border-t">
+                      <h4 className="text-sm font-semibold mb-3">Listen on:</h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button variant="outline" size="sm" className="gap-2 bg-red-500/10 border-red-500/20" asChild>
+                          <a href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).youtube} target="_blank" rel="noopener noreferrer">
+                            <Youtube className="h-4 w-4 text-red-500" />
+                            YouTube
+                          </a>
+                        </Button>
+                        <Button variant="outline" size="sm" className="gap-2 bg-green-500/10 border-green-500/20" asChild>
+                          <a href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).spotify} target="_blank" rel="noopener noreferrer">
+                            <Music2 className="h-4 w-4 text-green-500" />
+                            Spotify
+                          </a>
+                        </Button>
+                        <Button variant="outline" size="sm" className="gap-2 bg-pink-500/10 border-pink-500/20" asChild>
+                          <a href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).appleMusic} target="_blank" rel="noopener noreferrer">
+                            <Apple className="h-4 w-4 text-pink-500" />
+                            Apple
+                          </a>
+                        </Button>
+                        <Button variant="outline" size="sm" className="gap-2 bg-orange-500/10 border-orange-500/20" asChild>
+                          <a href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).soundcloud} target="_blank" rel="noopener noreferrer">
+                            <Cloud className="h-4 w-4 text-orange-500" />
+                            SoundCloud
+                          </a>
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              )}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        /* Desktop UI */
+        <div className="p-3 sm:p-4 md:p-6 lg:p-8">
+          <div className="container mx-auto max-w-4xl">
+            <div className="mb-6 sm:mb-8 text-center">
+              <div className="mb-3 sm:mb-4 flex justify-center">
+                <div className="rounded-full bg-primary/10 p-3 sm:p-4">
+                  <Music className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-primary" />
+                </div>
+              </div>
+              <h1 className="mb-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">Musica</h1>
+              <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4">
+                Detect music by sound or search by lyrics
+              </p>
             </div>
 
-            <div className="rounded-lg bg-muted/50 p-3 sm:p-4 text-xs sm:text-sm">
-              <h4 className="font-semibold mb-2">Tips for best results:</h4>
-              <ul className="space-y-1 text-muted-foreground">
-                {isMobile ? (
-                  <>
-                    <li className="text-xs sm:text-sm">• <strong>System Audio:</strong> Detect music playing on your device</li>
-                    <li className="text-xs sm:text-sm">• <strong>Microphone:</strong> Position near speakers for best quality</li>
-                    <li className="text-xs sm:text-sm">• <strong>Duration:</strong> Record for 10-15s minimum, longer for difficult songs</li>
-                    <li className="text-xs sm:text-sm">• <strong>Background music:</strong> Record for 20-30s for scenes with dialogue</li>
-                  </>
-                ) : (
-                  <>
-                    <li className="text-xs sm:text-sm">• <strong>Tab Audio:</strong> Select the tab playing music when prompted</li>
-                    <li className="text-xs sm:text-sm">• <strong>Microphone:</strong> Position near speakers for best quality</li>
-                    <li className="text-xs sm:text-sm">• <strong>Auto-stop:</strong> Recording stops automatically after 7s of silence</li>
-                    <li className="text-xs sm:text-sm">• <strong>Duration:</strong> Record for 10-15s minimum, longer for difficult songs</li>
-                    <li className="text-xs sm:text-sm">• <strong>Background music:</strong> Record for 20-30s for scenes with dialogue</li>
-                    <li className="text-xs sm:text-sm">• Works with YouTube, Spotify, movies, TV shows, and live music</li>
-                  </>
-                )}
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
-          </TabsContent>
+            <Tabs defaultValue="detect" className="w-full mb-4 sm:mb-6">
+              <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6 h-auto">
+                <TabsTrigger value="detect" className="text-xs sm:text-sm py-2 sm:py-2.5">
+                  <span className="hidden sm:inline">Audio Detection</span>
+                  <span className="sm:hidden">Detect</span>
+                </TabsTrigger>
+                <TabsTrigger value="lyrics" className="text-xs sm:text-sm py-2 sm:py-2.5">
+                  <span className="hidden sm:inline">Lyrics Search</span>
+                  <span className="sm:hidden">Lyrics</span>
+                </TabsTrigger>
+                <TabsTrigger value="splitter" className="text-xs sm:text-sm py-2 sm:py-2.5">
+                  <span className="hidden sm:inline">Audio Splitter</span>
+                  <span className="sm:hidden">Splitter</span>
+                </TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="lyrics" className="space-y-4 sm:space-y-6">
-            <LyricsSearch />
-          </TabsContent>
+              <TabsContent value="detect" className="space-y-4 sm:space-y-6">
+                <Card className="border-2 shadow-lg">
+                  <CardHeader className="p-4 sm:p-6">
+                    <CardTitle className="text-lg sm:text-xl">How it works</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">
+                      Our AI separates music from speech and identifies songs playing in the background
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                    <Tabs value={captureMode} onValueChange={(v) => setCaptureMode(v as "microphone" | "tab")} className="w-full">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="tab" className="flex items-center gap-2 text-sm">
+                          <MonitorPlay className="h-4 w-4" />
+                          <span className="hidden sm:inline">Tab Audio</span>
+                          <span className="sm:hidden">Tab</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="microphone" className="flex items-center gap-2 text-sm">
+                          <Mic className="h-4 w-4" />
+                          <span className="hidden sm:inline">Microphone</span>
+                          <span className="sm:hidden">Mic</span>
+                        </TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="tab" className="mt-3 sm:mt-4">
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-4">
+                          Capture audio directly from YouTube, Spotify, or any browser tab
+                        </p>
+                      </TabsContent>
+                      
+                      <TabsContent value="microphone" className="mt-3 sm:mt-4">
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-4">
+                          Record music playing near your device's microphone
+                        </p>
+                      </TabsContent>
+                    </Tabs>
 
-          <TabsContent value="splitter" className="space-y-4 sm:space-y-6">
-            {!user ? (
-              <Card className="border-2">
-                <CardContent className="pt-4 sm:pt-6 text-center px-3 sm:px-6">
-                  <Lock className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-muted-foreground" />
-                  <h3 className="text-base sm:text-lg font-semibold mb-2">Sign in Required</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-                    Please sign in to access the audio splitter feature
-                  </p>
-                  <Button onClick={() => navigate("/auth")} size="sm" className="sm:size-default">Sign In</Button>
+                    <div className="flex flex-col gap-4">
+                      {isRecording && (
+                        <Card className="border-primary/50 bg-primary/5 animate-pulse">
+                          <CardContent className="pt-4 sm:pt-6 px-3 sm:px-6">
+                            <div className="flex items-center gap-3 sm:gap-4">
+                              <Radio className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-pulse flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold text-base sm:text-lg">Listening...</h3>
+                                <p className="text-xl sm:text-2xl font-bold text-primary">{recordingDuration}s</p>
+                                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                                  {recordingDuration < 10 
+                                    ? "Keep recording (min 10s)" 
+                                    : "Recording... Auto-stop on silence"}
+                                </p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                      
+                      <Button
+                        size="lg"
+                        onClick={isRecording ? stopRecording : startRecording}
+                        disabled={isProcessing}
+                        className="h-14 sm:h-16 text-base sm:text-lg w-full"
+                        variant={isRecording ? "destructive" : "default"}
+                      >
+                        {isRecording ? (
+                          <>
+                            <Mic className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
+                            <span className="hidden sm:inline">Stop Recording ({recordingDuration}s)</span>
+                            <span className="sm:hidden">Stop ({recordingDuration}s)</span>
+                          </>
+                        ) : isProcessing ? (
+                          <>
+                            <Loader2 className="mr-2 h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <Mic className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
+                            Start Recording
+                          </>
+                        )}
+                      </Button>
+
+                      {detectedSong && (
+                        <>
+                          {/* Success Banner */}
+                          <Card className="border-green-500/50 bg-gradient-to-r from-green-500/10 to-emerald-500/10">
+                            <CardContent className="pt-4 sm:pt-6 px-3 sm:px-6">
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                                <div className="flex items-center gap-2 sm:gap-3 flex-1">
+                                  <div className="rounded-full bg-green-500/20 p-1.5 sm:p-2 flex-shrink-0">
+                                    <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <h3 className="font-semibold text-base sm:text-lg">Song Identified!</h3>
+                                    <p className="text-xs sm:text-sm text-muted-foreground">
+                                      {isSaved ? "Saved to history" : user ? "Auto-saved" : "Sign in to save"}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex gap-2 w-full sm:w-auto">
+                                  <Button
+                                    onClick={handleRetry}
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-2 flex-1 sm:flex-initial"
+                                  >
+                                    <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
+                                    <span className="hidden sm:inline">Retry</span>
+                                    <span className="sm:hidden">Retry</span>
+                                  </Button>
+                                  {user && !isSaved && (
+                                    <Button
+                                      onClick={() => saveDetectionToHistory(detectedSong)}
+                                      variant="default"
+                                      size="sm"
+                                      className="gap-2 flex-1 sm:flex-initial"
+                                    >
+                                      <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
+                                      <span className="hidden sm:inline">Save</span>
+                                      <span className="sm:hidden">Save</span>
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          {/* Detection Results */}
+                          <Card className="border-green-500/50 bg-green-500/5">
+                            <CardContent className="pt-4 sm:pt-6 px-3 sm:px-6">
+                              <div className="flex items-start gap-2 sm:gap-3">
+                                <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-green-500 flex-shrink-0 mt-1" />
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-semibold text-base sm:text-lg break-words">{detectedSong.title}</h3>
+                                  <p className="text-sm sm:text-base text-muted-foreground break-words">{detectedSong.artist}</p>
+                                  {detectedSong.album && (
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                      Album: {detectedSong.album}
+                                    </p>
+                                  )}
+                                  {detectedSong.confidence && (
+                                    <div className="mt-3 flex items-center gap-2">
+                                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                        <div 
+                                          className="h-full bg-green-500 transition-all duration-500"
+                                          style={{ width: `${detectedSong.confidence}%` }}
+                                        />
+                                      </div>
+                                      <span className="text-sm font-medium text-green-600">
+                                        {detectedSong.confidence}%
+                                      </span>
+                                    </div>
+                                  )}
+                                
+                                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-green-500/20">
+                                  <h4 className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3">Now Playing:</h4>
+                                  <div className="mb-3 sm:mb-4 rounded-lg overflow-hidden bg-black/5">
+                                    <iframe
+                                      width="100%"
+                                      height="200"
+                                      src={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).youtubeEmbed}
+                                      title="YouTube Music Player"
+                                      frameBorder="0"
+                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                      allowFullScreen
+                                      referrerPolicy="strict-origin-when-cross-origin"
+                                      className="w-full aspect-video sm:aspect-auto"
+                                    />
+                                  </div>
+                                  
+                                  <h4 className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3">Or listen on:</h4>
+                                  <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="justify-start gap-1.5 sm:gap-2 bg-red-500/10 border-red-500/20 hover:bg-red-500/20 hover:border-red-500/30 text-xs sm:text-sm px-2 sm:px-3"
+                                      asChild
+                                    >
+                                      <a
+                                        href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).youtube}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
+                                        <Youtube className="h-3 w-3 sm:h-4 sm:w-4 text-red-500 flex-shrink-0" />
+                                        <span className="hidden xs:inline">YouTube</span>
+                                        <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3 ml-auto opacity-50" />
+                                      </a>
+                                    </Button>
+                                    
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="justify-start gap-1.5 sm:gap-2 bg-green-500/10 border-green-500/20 hover:bg-green-500/20 hover:border-green-500/30 text-xs sm:text-sm px-2 sm:px-3"
+                                      asChild
+                                    >
+                                      <a
+                                        href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).spotify}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
+                                        <Music2 className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 flex-shrink-0" />
+                                        <span className="hidden xs:inline">Spotify</span>
+                                        <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3 ml-auto opacity-50" />
+                                      </a>
+                                    </Button>
+                                    
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="justify-start gap-1.5 sm:gap-2 bg-pink-500/10 border-pink-500/20 hover:bg-pink-500/20 hover:border-pink-500/30 text-xs sm:text-sm px-2 sm:px-3"
+                                      asChild
+                                    >
+                                      <a
+                                        href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).appleMusic}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
+                                        <Apple className="h-3 w-3 sm:h-4 sm:w-4 text-pink-500 flex-shrink-0" />
+                                        <span className="hidden xs:inline">Apple</span>
+                                        <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3 ml-auto opacity-50" />
+                                      </a>
+                                    </Button>
+                                    
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="justify-start gap-1.5 sm:gap-2 bg-orange-500/10 border-orange-500/20 hover:bg-orange-500/20 hover:border-orange-500/30 text-xs sm:text-sm px-2 sm:px-3"
+                                      asChild
+                                    >
+                                      <a
+                                        href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).soundcloud}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
+                                        <Cloud className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500 flex-shrink-0" />
+                                        <span className="hidden xs:inline">SoundCloud</span>
+                                        <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3 ml-auto opacity-50" />
+                                      </a>
+                                    </Button>
+                                    
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="justify-start gap-1.5 sm:gap-2 bg-blue-500/10 border-blue-500/20 hover:bg-blue-500/20 hover:border-blue-500/30 text-xs sm:text-sm px-2 sm:px-3"
+                                      asChild
+                                    >
+                                      <a
+                                        href={getMusicPlatformUrls(detectedSong.title, detectedSong.artist).amazonMusic}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
+                                        <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500 flex-shrink-0" />
+                                        <span className="hidden xs:inline">Amazon</span>
+                                        <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3 ml-auto opacity-50" />
+                                      </a>
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </>
+                    )}
+
+                    {!detectedSong && !isRecording && !isProcessing && (
+                      <Card className="border-muted bg-muted/30">
+                        <CardContent className="pt-4 sm:pt-6 px-3 sm:px-6">
+                          <div className="flex items-start gap-2 sm:gap-3">
+                            <div className="rounded-full bg-muted p-1.5 sm:p-2 flex-shrink-0">
+                              <XCircle className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-base sm:text-lg">Ready to detect</h3>
+                              <p className="text-xs sm:text-sm text-muted-foreground">
+                                No song detected yet. Start recording to identify background music.
+                              </p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+
+                  <div className="rounded-lg bg-muted/50 p-3 sm:p-4 text-xs sm:text-sm">
+                    <h4 className="font-semibold mb-2">Tips for best results:</h4>
+                    <ul className="space-y-1 text-muted-foreground">
+                      <li className="text-xs sm:text-sm">• <strong>Tab Audio:</strong> Select the tab playing music when prompted</li>
+                      <li className="text-xs sm:text-sm">• <strong>Microphone:</strong> Position near speakers for best quality</li>
+                      <li className="text-xs sm:text-sm">• <strong>Auto-stop:</strong> Recording stops automatically after 7s of silence</li>
+                      <li className="text-xs sm:text-sm">• <strong>Duration:</strong> Record for 10-15s minimum, longer for difficult songs</li>
+                      <li className="text-xs sm:text-sm">• <strong>Background music:</strong> Record for 20-30s for scenes with dialogue</li>
+                      <li className="text-xs sm:text-sm">• Works with YouTube, Spotify, movies, TV shows, and live music</li>
+                    </ul>
+                  </div>
                 </CardContent>
               </Card>
-            ) : (
-              <AudioSplitter />
-            )}
-          </TabsContent>
-        </Tabs>
+            </TabsContent>
 
+            <TabsContent value="lyrics" className="space-y-4 sm:space-y-6">
+              <LyricsSearch />
+            </TabsContent>
+
+            <TabsContent value="splitter" className="space-y-4 sm:space-y-6">
+              {!user ? (
+                <Card className="border-2">
+                  <CardContent className="pt-4 sm:pt-6 text-center px-3 sm:px-6">
+                    <Lock className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-muted-foreground" />
+                    <h3 className="text-base sm:text-lg font-semibold mb-2">Sign in Required</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
+                      Please sign in to access the audio splitter feature
+                    </p>
+                    <Button onClick={() => navigate("/auth")} size="sm" className="sm:size-default">Sign In</Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <AudioSplitter />
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
-      </div>
+      )}
     </div>
   );
 };
