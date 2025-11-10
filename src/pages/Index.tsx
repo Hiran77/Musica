@@ -550,13 +550,27 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="relative min-h-screen flex flex-col overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-background">
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-float" />
+          <div className="absolute bottom-0 right-0 w-80 h-80 bg-primary-glow/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-accent/20 rounded-full blur-3xl animate-pulse-slow" />
+        </div>
+      </div>
+
       {/* Mobile Shazam-like UI */}
       {isMobile ? (
-        <div className="flex-1 flex flex-col p-4">
+        <div className="relative z-10 flex-1 flex flex-col p-4">
           {/* Header */}
-          <div className="text-center pt-8 pb-4">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Musica</h1>
+          <div className="text-center pt-8 pb-4 animate-fade-in">
+            <div className="flex justify-center mb-4">
+              <div className="rounded-full bg-primary/20 p-4 border-2 border-primary/30 pulse-glow">
+                <Music className="h-10 w-10 text-primary animate-float" />
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight mb-2 gradient-text">Musica</h1>
             <p className="text-sm text-muted-foreground">
               {captureMode === "system" ? "System Audio Detection" : "Microphone Detection"}
             </p>
@@ -565,10 +579,13 @@ const Index = () => {
           {/* Main Content - Centered */}
           <div className="flex-1 flex flex-col items-center justify-center space-y-8 pb-20">
             {/* Large Circular Button - Shazam Style */}
-            <div className="relative">
+            <div className="relative animate-scale-in">
               {/* Pulse Animation Ring when recording */}
               {isRecording && (
-                <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" style={{ animationDuration: '2s' }} />
+                <>
+                  <div className="absolute inset-0 rounded-full bg-primary/30 animate-ping" style={{ animationDuration: '2s' }} />
+                  <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" style={{ animationDuration: '2s', animationDelay: '0.5s' }} />
+                </>
               )}
               
               {/* Main Button */}
@@ -577,20 +594,20 @@ const Index = () => {
                 disabled={isProcessing}
                 className={`
                   relative w-56 h-56 rounded-full flex flex-col items-center justify-center gap-3
-                  transition-all duration-300 shadow-2xl
+                  smooth-transition shadow-2xl
                   ${isRecording 
-                    ? 'bg-destructive text-destructive-foreground scale-95' 
+                    ? 'bg-gradient-to-br from-red-500 to-red-600 text-white scale-95 animate-pulse-slow' 
                     : isProcessing
-                    ? 'bg-muted text-muted-foreground'
-                    : 'bg-gradient-to-br from-primary via-primary to-primary-glow text-primary-foreground'
+                    ? 'bg-gradient-to-br from-primary to-primary-glow text-primary-foreground animate-pulse'
+                    : 'bg-gradient-to-br from-primary to-primary-glow text-primary-foreground pulse-glow'
                   }
                   ${!isProcessing && !isRecording ? 'hover:scale-105 active:scale-95' : ''}
                   disabled:opacity-50
                 `}
                 style={{
                   boxShadow: isRecording 
-                    ? '0 0 60px hsl(var(--destructive) / 0.5)' 
-                    : '0 0 60px hsl(var(--primary) / 0.4)'
+                    ? '0 0 60px hsl(0 84% 60% / 0.5), 0 0 100px hsl(0 84% 60% / 0.3)' 
+                    : '0 0 60px hsl(var(--primary) / 0.4), 0 0 100px hsl(var(--primary) / 0.2)'
                 }}
               >
                 {isProcessing ? (
@@ -600,16 +617,16 @@ const Index = () => {
                   </>
                 ) : isRecording ? (
                   <>
-                    <div className="w-12 h-12 rounded bg-white/90" />
+                    <div className="w-12 h-12 rounded bg-white/90 animate-pulse" />
                     <span className="text-2xl font-bold">{recordingDuration}s</span>
                     <span className="text-xs opacity-90">Tap to stop</span>
                   </>
                 ) : (
                   <>
                     {captureMode === "system" ? (
-                      <Speaker className="h-20 w-20" />
+                      <Speaker className="h-20 w-20 animate-float" />
                     ) : (
-                      <Mic className="h-20 w-20" />
+                      <Mic className="h-20 w-20 animate-float" />
                     )}
                     <span className="text-sm font-medium">Tap to detect</span>
                   </>
@@ -633,11 +650,13 @@ const Index = () => {
             {!isRecording && !isProcessing && !detectedSong && (
               <button
                 onClick={() => setCaptureMode(captureMode === "system" ? "microphone" : "system")}
-                className="flex items-center gap-3 px-6 py-3 rounded-full bg-card border-2 border-border hover:border-primary transition-colors"
+                className="flex items-center gap-3 px-6 py-3 rounded-full glass-effect border-2 border-border hover:border-primary smooth-transition hover-lift"
               >
                 {captureMode === "system" ? (
                   <>
-                    <Speaker className="h-5 w-5 text-primary" />
+                    <div className="rounded-full bg-primary/20 p-2">
+                      <Speaker className="h-5 w-5 text-primary" />
+                    </div>
                     <div className="text-left">
                       <p className="text-sm font-medium">System Audio</p>
                       <p className="text-xs text-muted-foreground">Tap to switch to mic</p>
@@ -645,7 +664,9 @@ const Index = () => {
                   </>
                 ) : (
                   <>
-                    <Mic className="h-5 w-5 text-primary" />
+                    <div className="rounded-full bg-primary/20 p-2">
+                      <Mic className="h-5 w-5 text-primary" />
+                    </div>
                     <div className="text-left">
                       <p className="text-sm font-medium">Microphone</p>
                       <p className="text-xs text-muted-foreground">Tap to switch to system</p>
@@ -657,8 +678,8 @@ const Index = () => {
 
             {/* Detection Result - Compact for Mobile */}
             {detectedSong && (
-              <div className="w-full max-w-sm space-y-4 animate-fade-in">
-                <Card className="border-green-500/50 bg-green-500/5">
+              <div className="w-full max-w-sm space-y-4 animate-fade-up">
+                <Card className="border-green-500/50 glass-effect bg-green-500/5 hover-lift">
                   <CardContent className="pt-6">
                     <div className="flex items-start gap-3 mb-4">
                       <div className="rounded-full bg-green-500/20 p-2">
@@ -745,15 +766,21 @@ const Index = () => {
         </div>
       ) : (
         /* Desktop UI */
-        <div className="p-3 sm:p-4 md:p-6 lg:p-8">
-          <div className="container mx-auto max-w-4xl">
-            <div className="mb-6 sm:mb-8 text-center">
+        <div className="relative p-3 sm:p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
+          {/* Subtle Background Animation for Desktop */}
+          <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float" />
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary-glow/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1.5s' }} />
+          </div>
+          
+          <div className="relative container mx-auto max-w-4xl">
+            <div className="mb-6 sm:mb-8 text-center animate-fade-in">
               <div className="mb-3 sm:mb-4 flex justify-center">
-                <div className="rounded-full bg-primary/10 p-3 sm:p-4">
-                  <Music className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-primary" />
+                <div className="rounded-full bg-primary/10 p-3 sm:p-4 pulse-glow">
+                  <Music className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-primary animate-float" />
                 </div>
               </div>
-              <h1 className="mb-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">Musica</h1>
+              <h1 className="mb-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight gradient-text">Musica</h1>
               <p className="text-sm sm:text-base md:text-lg text-muted-foreground px-4">
                 Detect music by sound or search by lyrics
               </p>
@@ -775,8 +802,8 @@ const Index = () => {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="detect" className="space-y-4 sm:space-y-6">
-                <Card className="border-2 shadow-lg">
+              <TabsContent value="detect" className="space-y-4 sm:space-y-6 animate-fade-up">
+                <Card className="border-2 glass-effect hover-lift">
                   <CardHeader className="p-4 sm:p-6">
                     <CardTitle className="text-lg sm:text-xl">How it works</CardTitle>
                     <CardDescription className="text-xs sm:text-sm">
@@ -835,7 +862,7 @@ const Index = () => {
                         size="lg"
                         onClick={isRecording ? stopRecording : startRecording}
                         disabled={isProcessing}
-                        className="h-14 sm:h-16 text-base sm:text-lg w-full"
+                        className="h-14 sm:h-16 text-base sm:text-lg w-full smooth-transition pulse-glow"
                         variant={isRecording ? "destructive" : "default"}
                       >
                         {isRecording ? (

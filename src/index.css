@@ -40,7 +40,9 @@ All colors MUST be HSL.
     --radius: 0.75rem;
     
     --gradient-primary: linear-gradient(135deg, hsl(280 85% 60%), hsl(320 85% 60%));
+    --gradient-shimmer: linear-gradient(90deg, transparent, hsl(280 85% 60% / 0.1), transparent);
     --shadow-glow: 0 0 40px hsl(280 85% 60% / 0.3);
+    --shadow-soft: 0 2px 20px hsl(280 85% 60% / 0.15);
 
     --sidebar-background: 0 0% 98%;
 
@@ -90,7 +92,9 @@ All colors MUST be HSL.
     --ring: 280 85% 60%;
     
     --gradient-primary: linear-gradient(135deg, hsl(280 85% 60%), hsl(320 85% 60%));
+    --gradient-shimmer: linear-gradient(90deg, transparent, hsl(280 85% 60% / 0.2), transparent);
     --shadow-glow: 0 0 40px hsl(280 85% 60% / 0.3);
+    --shadow-soft: 0 2px 20px hsl(280 85% 60% / 0.2);
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -109,5 +113,51 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .smooth-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  .glass-effect {
+    @apply bg-background/60 backdrop-blur-xl border border-border/50;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent;
+  }
+  
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+    background: var(--gradient-shimmer);
+    background-size: 200% 100%;
+  }
+  
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+  }
+  
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px hsl(var(--primary) / 0.8), 0 0 60px hsl(var(--primary) / 0.4);
   }
 }

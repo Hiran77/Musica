@@ -65,20 +65,20 @@ export const Navbar = () => {
   ];
 
   return (
-    <nav className={`sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-transform duration-300 ${
+    <nav className={`hidden md:block sticky top-0 z-50 w-full border-b glass-effect transition-transform duration-300 ${
       isVisible ? 'translate-y-0' : '-translate-y-full'
     }`}>
       <div className="container flex h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link 
           to="/" 
-          className="flex items-center gap-2 font-bold text-xl group transition-all duration-300"
+          className="flex items-center gap-2 font-bold text-xl group smooth-transition hover-lift"
           onClick={() => setMobileMenuOpen(false)}
         >
-          <div className="relative p-2 rounded-lg bg-primary/20 border border-primary/30">
+          <div className="relative p-2 rounded-lg bg-primary/20 border border-primary/30 pulse-glow">
             <Music className="h-5 w-5 text-primary" />
           </div>
-          <span className="text-foreground font-bold">
+          <span className="gradient-text font-bold">
             Musica
           </span>
         </Link>
@@ -89,16 +89,16 @@ export const Navbar = () => {
             <Link
               key={path}
               to={path}
-              className={`relative px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+              className={`relative px-4 py-2 rounded-md text-sm font-medium smooth-transition flex items-center gap-2 ${
                 isActive(path)
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'text-primary bg-primary/10'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
               }`}
             >
               <Icon className="h-4 w-4" />
               {label}
               {isActive(path) && (
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary to-primary-glow animate-fade-in" />
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary to-primary-glow animate-scale-in" />
               )}
             </Link>
           ))}
@@ -111,76 +111,21 @@ export const Navbar = () => {
               onClick={handleSignOut}
               variant="ghost"
               size="sm"
-              className="gap-2"
+              className="gap-2 smooth-transition"
             >
               <LogOut className="h-4 w-4" />
               Sign Out
             </Button>
           ) : (
             <Link to="/auth">
-              <Button variant="default" size="sm" className="gap-2">
+              <Button variant="default" size="sm" className="gap-2 pulse-glow smooth-transition">
                 <LogIn className="h-4 w-4" />
                 Sign In
               </Button>
             </Link>
           )}
         </div>
-
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2 text-foreground hover:text-primary transition-colors"
-        >
-          {mobileMenuOpen ? (
-            <X className="h-6 w-6" />
-          ) : (
-            <Menu className="h-6 w-6" />
-          )}
-        </button>
       </div>
-
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-t bg-background/95 backdrop-blur animate-fade-in">
-          <div className="container px-4 py-4 space-y-2">
-            {navLinks.map(({ path, label, icon: Icon }) => (
-              <Link
-                key={path}
-                to={path}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-all duration-300 ${
-                  isActive(path)
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-                {label}
-              </Link>
-            ))}
-            
-            <div className="pt-2 mt-2 border-t">
-              {user ? (
-                <Button
-                  onClick={handleSignOut}
-                  variant="ghost"
-                  className="w-full justify-start gap-3"
-                >
-                  <LogOut className="h-5 w-5" />
-                  Sign Out
-                </Button>
-              ) : (
-                <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="default" className="w-full justify-start gap-3">
-                    <LogIn className="h-5 w-5" />
-                    Sign In
-                  </Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </nav>
   );
 };

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
+import { MobileBottomNav } from "./components/MobileBottomNav";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./components/AppSidebar";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -57,6 +58,9 @@ const App = () => (
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>
+                
+                {/* Mobile Bottom Navigation */}
+                <MobileBottomNav />
               </div>
             </div>
           </SidebarProvider>
