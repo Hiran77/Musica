@@ -112,7 +112,11 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-hidden;
+  }
+  
+  html, body, #root {
+    @apply h-full w-full overflow-hidden;
   }
 }
 

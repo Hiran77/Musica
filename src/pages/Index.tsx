@@ -550,9 +550,9 @@ const Index = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col overflow-hidden">
+    <div className="relative h-screen flex flex-col overflow-hidden">
       {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-background">
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-primary/5 to-background overflow-hidden">
         <div className="absolute inset-0 opacity-30">
           <div className="absolute top-0 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-float" />
           <div className="absolute bottom-0 right-0 w-80 h-80 bg-primary-glow/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
@@ -562,9 +562,9 @@ const Index = () => {
 
       {/* Mobile Shazam-like UI */}
       {isMobile ? (
-        <div className="relative z-10 flex-1 flex flex-col p-4">
+        <div className="relative z-10 flex-1 flex flex-col p-4 overflow-hidden">
           {/* Header */}
-          <div className="text-center pt-8 pb-4 animate-fade-in">
+          <div className="text-center pt-4 pb-2 animate-fade-in">
             <div className="flex justify-center mb-4">
               <div className="rounded-full bg-primary/20 p-4 border-2 border-primary/30 pulse-glow">
                 <Music className="h-10 w-10 text-primary animate-float" />
@@ -577,7 +577,7 @@ const Index = () => {
           </div>
 
           {/* Main Content - Centered */}
-          <div className="flex-1 flex flex-col items-center justify-center space-y-8 pb-20">
+          <div className="flex-1 flex flex-col items-center justify-center space-y-6 pb-24 overflow-y-auto">
             {/* Large Circular Button - Shazam Style */}
             <div className="relative animate-scale-in">
               {/* Pulse Animation Ring when recording */}
