@@ -770,7 +770,7 @@ const Index = () => {
       ) : (
         /* Desktop UI */
         <ScrollArea className="flex-1 w-full h-full">
-          <div className="relative p-3 sm:p-4 md:p-6 lg:p-8 pb-8">
+          <div className="relative p-3 sm:p-4 md:p-6 lg:p-8 pb-16">
           {/* Subtle Background Animation for Desktop */}
           <div className="fixed inset-0 opacity-20 pointer-events-none overflow-hidden -z-10">
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float" />
