@@ -579,7 +579,7 @@ const Index = () => {
 
           {/* Main Content - Scrollable */}
           <ScrollArea className="flex-1 w-full">
-            <div className="flex flex-col items-center space-y-6 px-4 pb-32 pt-4">
+            <div className="flex flex-col items-center justify-center min-h-full space-y-6 px-4 py-8 pb-32">
             {/* Large Circular Button - Shazam Style */}
             <div className="relative animate-scale-in">
               {/* Pulse Animation Ring when recording */}
@@ -777,8 +777,8 @@ const Index = () => {
             <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary-glow/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1.5s' }} />
           </div>
           
-          <div className="relative container mx-auto max-w-4xl">
-            <div className="mb-6 sm:mb-8 text-center animate-fade-in">
+          <div className="relative container mx-auto max-w-4xl min-h-full flex flex-col justify-center py-8">
+            <div className="mb-8 sm:mb-12 text-center animate-fade-in">
               <div className="mb-3 sm:mb-4 flex justify-center">
                 <div className="rounded-full bg-primary/10 p-3 sm:p-4 pulse-glow">
                   <Music className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 text-primary animate-float" />
@@ -790,8 +790,8 @@ const Index = () => {
               </p>
             </div>
 
-            <Tabs defaultValue="detect" className="w-full mb-4 sm:mb-6">
-              <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6 h-auto">
+            <Tabs defaultValue="detect" className="w-full mb-6 sm:mb-8">
+              <TabsList className="grid w-full grid-cols-3 mb-6 sm:mb-8 h-auto">
                 <TabsTrigger value="detect" className="text-xs sm:text-sm py-2 sm:py-2.5">
                   <span className="hidden sm:inline">Audio Detection</span>
                   <span className="sm:hidden">Detect</span>
