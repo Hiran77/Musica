@@ -14,6 +14,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { Lock } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -576,8 +577,9 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Main Content - Centered */}
-          <div className="flex-1 flex flex-col items-center justify-center space-y-6 pb-24 overflow-y-auto">
+          {/* Main Content - Centered with smooth scroll */}
+          <ScrollArea className="flex-1 pb-24">
+            <div className="flex flex-col items-center justify-center space-y-6 min-h-full px-2">
             {/* Large Circular Button - Shazam Style */}
             <div className="relative animate-scale-in">
               {/* Pulse Animation Ring when recording */}
@@ -762,11 +764,13 @@ const Index = () => {
                 </Card>
               </div>
             )}
-          </div>
+            </div>
+          </ScrollArea>
         </div>
       ) : (
         /* Desktop UI */
-        <div className="relative p-3 sm:p-4 md:p-6 lg:p-8 pb-20 md:pb-8">
+        <ScrollArea className="relative flex-1">
+          <div className="p-3 sm:p-4 md:p-6 lg:p-8 pb-8">
           {/* Subtle Background Animation for Desktop */}
           <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float" />
@@ -1120,10 +1124,11 @@ const Index = () => {
               ) : (
                 <AudioSplitter />
               )}
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+          </div>
+        </ScrollArea>
       )}
     </div>
   );
