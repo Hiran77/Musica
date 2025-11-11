@@ -563,9 +563,9 @@ const Index = () => {
 
       {/* Mobile Shazam-like UI */}
       {isMobile ? (
-        <div className="relative z-10 flex-1 flex flex-col p-4 overflow-hidden">
+        <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="text-center pt-4 pb-2 animate-fade-in">
+          <div className="text-center pt-4 pb-2 px-4 animate-fade-in flex-shrink-0">
             <div className="flex justify-center mb-4">
               <div className="rounded-full bg-primary/20 p-4 border-2 border-primary/30 pulse-glow">
                 <Music className="h-10 w-10 text-primary animate-float" />
@@ -577,9 +577,9 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Main Content - Centered with smooth scroll */}
-          <ScrollArea className="flex-1 pb-24">
-            <div className="flex flex-col items-center justify-center space-y-6 min-h-full px-2">
+          {/* Main Content - Scrollable */}
+          <ScrollArea className="flex-1 w-full">
+            <div className="flex flex-col items-center space-y-6 px-4 pb-32 pt-4">
             {/* Large Circular Button - Shazam Style */}
             <div className="relative animate-scale-in">
               {/* Pulse Animation Ring when recording */}
@@ -769,10 +769,10 @@ const Index = () => {
         </div>
       ) : (
         /* Desktop UI */
-        <ScrollArea className="relative flex-1">
-          <div className="p-3 sm:p-4 md:p-6 lg:p-8 pb-8">
+        <ScrollArea className="flex-1 w-full h-full">
+          <div className="relative p-3 sm:p-4 md:p-6 lg:p-8 pb-8">
           {/* Subtle Background Animation for Desktop */}
-          <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
+          <div className="fixed inset-0 opacity-20 pointer-events-none overflow-hidden -z-10">
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float" />
             <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary-glow/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1.5s' }} />
           </div>
