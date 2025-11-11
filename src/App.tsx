@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
 import { MobileBottomNav } from "./components/MobileBottomNav";
+import { PageTransition } from "./components/PageTransition";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./components/AppSidebar";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -46,17 +47,19 @@ const App = () => (
                 </div>
                 
                 <main className="flex-1">
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/install" element={<Install />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/pricing" element={<Pricing />} />
-                    <Route path="/admin" element={<Admin />} />
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
+                  <PageTransition>
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/install" element={<Install />} />
+                      <Route path="/auth" element={<Auth />} />
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/pricing" element={<Pricing />} />
+                      <Route path="/admin" element={<Admin />} />
+                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </PageTransition>
                 </main>
                 
                 {/* Mobile Bottom Navigation */}
